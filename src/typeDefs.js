@@ -7,6 +7,11 @@ const typeDefs = [`
       items: [Item]
     }
 
+    type SigninPayload {
+      token: String
+      user: User
+    }
+
     type User {
       _id: String
       username: String!
@@ -14,6 +19,8 @@ const typeDefs = [`
       firstName: String!
       lastName: String!
       password: String!
+      picturePath: String!
+      status: String!
       dateOfBirth: String
       countryOfBirth: String
       countryOfResidence: String
@@ -24,7 +31,6 @@ const typeDefs = [`
       phoneCode: String
       phoneNumber: String
       gender: Gender
-      picturePath: String
       description: String
       allowsToReceiveRequests: Boolean
       radiusOfSearch: Int
@@ -58,7 +64,8 @@ const typeDefs = [`
     }
 
     type Mutation {
-      createUser(username: String, email: String, firstName: String, lastName: String, password: String): User
+      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!): SigninPayload
+      signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       deleteUser(username: String): User
       createItem(name: String, description: String, userId: String): Item
     }

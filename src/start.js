@@ -4,13 +4,16 @@ import bodyParser from 'body-parser'
 import {graphqlExpress, graphiqlExpress} from 'graphql-server-express'
 import {makeExecutableSchema} from 'graphql-tools'
 import cors from 'cors'
+import jwt from 'jsonwebtoken'
 
 import isEmpty from 'lodash/isEmpty'
 
 //-Files---
-import typeDefs from './typeDefs.js';
+import config from '../config'
+import typeDefs from './typeDefs.js'
 import validateInput from './utils/formValidation'
 import validationError from './errors/validationError'
+import fix from './utils/fix'
 //---------
 
 const URL = 'http://localhost'
@@ -33,30 +36,6 @@ export const start = async () => {
       Query: {
         userById: async (root, {_id}) => {
           return prepare(await Users.findOne(ObjectId(_id)))
-        },
-        userByUsernameOrEmail: async (root, args) => {
-          if (await Users.findOne({username: args.usernameOrEmail})) {
-            const user = await Users.findOne({username: args.usernameOrEmail, password: args.password})
-            if (user) {
-              return user
-            }
-            else {
-              throw new validationError('Password incorrect')
-            }
-          }
-          else if (await Users.findOne({email: args.usernameOrEmail})) {
-            const user  = await Users.findOne({email: args.usernameOrEmail, password: args.password})
-            if (user) {
-              return user
-            }
-            else {
-              throw new validationError('Password incorrect')
-            }
-          } 
-          else{
-            throw new validationError("User not found")             
-          }
-            
         },
         users: async () => {
           return (await Users.find({}).toArray()).map(prepare)
@@ -84,10 +63,10 @@ export const start = async () => {
       Mutation: {
         createUser: async (root, args, context, info) => {
           let errors = validateInput(args)
-          if (await Users.findOne({username: args.username})) {
-            errors['username'] = `User ${args.username} already exists`
+          if (await Users.findOne({username: args.username.toLowerCase()})) {
+            errors['username'] = `User ${args.username.toLowerCase()} already exists`
           }
-          if (await Users.findOne({email: args.email})) {
+          if (await Users.findOne({email: args.email.toLowerCase()})) {
             errors['email'] = 'Email already used'
           }
           if (!isEmpty(errors)) {
@@ -100,8 +79,59 @@ export const start = async () => {
             throw new validationError(errorList)
           }
           else {
-            const res = await Users.insert(args)
-            return prepare(await Users.findOne({_id: res.insertedIds[0]}))
+            const res = await Users.insert(fix(args))
+            const user = prepare(await Users.findOne({_id: res.insertedIds[0]}))
+            const token = jwt.sign({
+              _id: user._id,
+              username: user.username.toLower,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              picturePath: user.picturePath,
+              status: user.status,
+            }, config.jwtSecret)
+            return {token, user}
+          }
+        },
+        signinUser: async(root, args, context, info) => {
+          if (await Users.findOne({username: args.usernameOrEmail.toLowerCase()})) {
+            const user = await Users.findOne({username: args.usernameOrEmail.toLowerCase(), password: args.password})
+            if (user) {
+              const token = jwt.sign({
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                picturePath: user.picturePath,
+                status: user.status,
+              }, config.jwtSecret)
+              return {token, user}
+            }
+            else {
+              throw new validationError('Password incorrect')
+            }
+          }
+          else if (await Users.findOne({email: args.usernameOrEmail.toLowerCase()})) {
+            const user  = await Users.findOne({email: args.usernameOrEmail.toLowerCase(), password: args.password})
+            if (user) {
+              const token = jwt.sign({
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                picturePath: user.picturePath,
+                status: user.status,
+              }, config.jwtSecret)
+              return {token, user}
+            }
+            else {
+              throw new validationError('Password incorrect')
+            }
+          } 
+          else{
+            throw new validationError("User not found")             
           }
         },
         deleteUser: async (root, args, context, info) => {
@@ -124,9 +154,19 @@ export const start = async () => {
 
     app.use(cors())
 
-    app.use('/graphql', bodyParser.json(), graphqlExpress({
+    /*app.use('/graphql', bodyParser.json(), graphqlExpress({
       schema: schema,
-    }))
+      context: 'asd'
+    }))*/
+
+    app.use('/graphql', bodyParser.json(),
+      graphqlExpress(request => ({
+        schema: schema,
+        context: {
+          request
+        },
+      }))
+    )
 
     app.use('/graphiql', graphiqlExpress({
       endpointURL: '/graphql',
