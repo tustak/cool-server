@@ -9,10 +9,12 @@ import jwt from 'jsonwebtoken'
 import isEmpty from 'lodash/isEmpty'
 
 //-Files---
+import getModels from './models'
 import config from '../config'
 import typeDefs from './typeDefs.js'
 import validateInput from './utils/formValidation'
 import validationError from './errors/validationError'
+import authenticate from './middlewares/authenticate'
 import fix from './utils/fix'
 //---------
 
@@ -27,10 +29,11 @@ const prepare = (o) => {
 
 export const start = async () => {
   try {
-    const db = await MongoClient.connect(MONGO_URL)
+    //const db = await MongoClient.connect(MONGO_URL)
+    const models = await getModels()
 
-    const Users = db.collection('users')
-    const Items = db.collection('items')
+    const Users = models.Users//db.collection('users')
+    const Items = models.Items//db.collection('items')
 
     const resolvers = {
       Query: {
@@ -94,6 +97,7 @@ export const start = async () => {
           }
         },
         signinUser: async(root, args, context, info) => {
+          //const currentUser = authenticate(context.req, context.res, models)
           if (await Users.findOne({username: args.usernameOrEmail.toLowerCase()})) {
             const user = await Users.findOne({username: args.usernameOrEmail.toLowerCase(), password: args.password})
             if (user) {
@@ -160,10 +164,11 @@ export const start = async () => {
     }))*/
 
     app.use('/graphql', bodyParser.json(),
-      graphqlExpress(request => ({
+      graphqlExpress((req, res) => ({
         schema: schema,
         context: {
-          request
+          req,
+          res
         },
       }))
     )
