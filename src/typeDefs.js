@@ -66,6 +66,7 @@ const typeDefs = [`
     type Mutation {
       createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
+      updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
       deleteUser(username: String): User
       createItem(name: String, description: String, userId: String): Item
     }

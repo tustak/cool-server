@@ -5,6 +5,7 @@ import {graphqlExpress, graphiqlExpress} from 'graphql-server-express'
 import {makeExecutableSchema} from 'graphql-tools'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
+import _ from 'lodash'
 
 import isEmpty from 'lodash/isEmpty'
 
@@ -84,16 +85,10 @@ export const start = async () => {
           else {
             const res = await Users.insert(fix(args))
             const user = prepare(await Users.findOne({_id: res.insertedIds[0]}))
-            const token = jwt.sign({
-              _id: user._id,
-              username: user.username.toLower,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              picturePath: user.picturePath,
-              status: user.status,
-            }, config.jwtSecret)
-            return {token, user}
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                config.jwtSecret)
+              return {token, user}
           }
         },
         signinUser: async(root, args, context, info) => {
@@ -101,15 +96,9 @@ export const start = async () => {
           if (await Users.findOne({username: args.usernameOrEmail.toLowerCase()})) {
             const user = await Users.findOne({username: args.usernameOrEmail.toLowerCase(), password: args.password})
             if (user) {
-              const token = jwt.sign({
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                picturePath: user.picturePath,
-                status: user.status,
-              }, config.jwtSecret)
+              const token = jwt.sign(
+                _.omit(user, 'password'), 
+                config.jwtSecret)
               return {token, user}
             }
             else {
@@ -119,15 +108,9 @@ export const start = async () => {
           else if (await Users.findOne({email: args.usernameOrEmail.toLowerCase()})) {
             const user  = await Users.findOne({email: args.usernameOrEmail.toLowerCase(), password: args.password})
             if (user) {
-              const token = jwt.sign({
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                picturePath: user.picturePath,
-                status: user.status,
-              }, config.jwtSecret)
+              const token = jwt.sign(
+                _.omit(user, 'password'), 
+                config.jwtSecret)
               return {token, user}
             }
             else {
@@ -136,6 +119,25 @@ export const start = async () => {
           } 
           else{
             throw new validationError("User not found")             
+          }
+        },
+        updateUser: async(root, args, context, info) => {
+          const currentUser = authenticate(context.req, context.res, models)
+          let errors = validateInput(args)
+          const updateArgs = _.omit(args, '_id')
+          const updatedUser = await Users.findOneAndUpdate(
+            {_id: ObjectId(args._id)}, 
+            {$set: 
+              updateArgs
+            }, 
+            {returnNewDocument: true}
+          )
+          const user = await Users.findOne({_id: ObjectId(args._id)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                config.jwtSecret)
+              return {token, user}
           }
         },
         deleteUser: async (root, args, context, info) => {
