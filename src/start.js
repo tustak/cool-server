@@ -123,7 +123,17 @@ export const start = async () => {
         },
         updateUser: async(root, args, context, info) => {
           const currentUser = authenticate(context.req, context.res, models)
-          let errors = validateInput(args)
+          let errors = validateInput(args, true)
+          if (!isEmpty(errors)) {
+            const errorList = []
+            Object.keys(errors).map(
+              key => {
+                errorList.push(errors[key])
+              }
+            )
+            throw new validationError(errorList)
+          }
+
           const updateArgs = _.omit(args, '_id')
           const updatedUser = await Users.findOneAndUpdate(
             {_id: ObjectId(args._id)}, 

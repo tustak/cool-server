@@ -30,7 +30,7 @@ const typeDefs = [`
       apartment: String
       phoneCode: String
       phoneNumber: String
-      gender: Gender
+      gender: String
       description: String
       allowsToReceiveRequests: Boolean
       radiusOfSearch: Int
@@ -48,12 +48,6 @@ const typeDefs = [`
       registered: String
       lastConnection: String
       lastLocation: [Float!]
-    }
-
-    enum Gender {
-      M
-      F
-      LGBT
     }
 
     type Item {
