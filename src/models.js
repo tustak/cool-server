@@ -1,5 +1,7 @@
 import {MongoClient, ObjectId} from 'mongodb'
-const MONGO_URL = 'mongodb://localhost:27017/tustak'
+import config from '../config'
+//const MONGO_URL = 'mongodb://localhost:27017/tustak'
+const MONGO_URL = config.mongoURL
 
 var db;
 var Users;

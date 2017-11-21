@@ -21,7 +21,8 @@ import fix from './utils/fix'
 
 const URL = 'http://localhost'
 const PORT = 3001
-const MONGO_URL = 'mongodb://localhost:27017/tustak'
+//const MONGO_URL = 'mongodb://localhost:27017/tustak'
+const MONGO_URL = config.mongoURL
 
 const prepare = (o) => {
   o._id = o._id.toString()
