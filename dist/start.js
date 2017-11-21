@@ -39,10 +39,6 @@ var _models = require('./models');
 
 var _models2 = _interopRequireDefault(_models);
 
-var _config = require('../config');
-
-var _config2 = _interopRequireDefault(_config);
-
 var _typeDefs = require('./typeDefs.js');
 
 var _typeDefs2 = _interopRequireDefault(_typeDefs);
@@ -67,13 +63,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 //---------
 
-var URL = 'http://localhost';
+
+// COnfig
+
 
 //-Files---
+var jwtSecret = process.env.jwtSecret;
+var mongoURL = process.env.mongoURL;
 
+var URL = 'http://localhost';
 var PORT = 3001;
 //const MONGO_URL = 'mongodb://localhost:27017/tustak'
-var MONGO_URL = _config2.default.mongoURL;
+var MONGO_URL = mongoURL;
 
 var prepare = function prepare(o) {
   o._id = o._id.toString();
@@ -301,7 +302,7 @@ var start = exports.start = function _callee() {
                       case 21:
                         _context8.t1 = _context8.sent;
                         user = (0, _context8.t0)(_context8.t1);
-                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), _config2.default.jwtSecret);
+                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
                         return _context8.abrupt('return', { token: token, user: user });
 
                       case 25:
@@ -338,7 +339,7 @@ var start = exports.start = function _callee() {
                           break;
                         }
 
-                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), _config2.default.jwtSecret);
+                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
                         return _context9.abrupt('return', { token: token, user: user });
 
                       case 11:
@@ -369,7 +370,7 @@ var start = exports.start = function _callee() {
                           break;
                         }
 
-                        _token = _jsonwebtoken2.default.sign(_lodash2.default.omit(_user, 'password'), _config2.default.jwtSecret);
+                        _token = _jsonwebtoken2.default.sign(_lodash2.default.omit(_user, 'password'), jwtSecret);
                         return _context9.abrupt('return', { token: _token, user: _user });
 
                       case 25:
@@ -429,7 +430,7 @@ var start = exports.start = function _callee() {
                           break;
                         }
 
-                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), _config2.default.jwtSecret);
+                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
                         return _context10.abrupt('return', { token: token, user: user });
 
                       case 16:
@@ -499,8 +500,13 @@ var start = exports.start = function _callee() {
           });
           app = (0, _express2.default)();
 
+          //app.use(cors())
 
-          app.use((0, _cors2.default)());
+          app.use(function (req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+          });
 
           /*app.use('/graphql', bodyParser.json(), graphqlExpress({
             schema: schema,

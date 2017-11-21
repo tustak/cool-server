@@ -6,14 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _mongodb = require('mongodb');
 
-var _config = require('../config');
-
-var _config2 = _interopRequireDefault(_config);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 //const MONGO_URL = 'mongodb://localhost:27017/tustak'
-var MONGO_URL = _config2.default.mongoURL;
+var MONGO_URL = process.env.mongoURL;
 
 var db;
 var Users;
