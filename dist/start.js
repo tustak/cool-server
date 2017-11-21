@@ -503,9 +503,12 @@ var start = exports.start = function _callee() {
           //app.use(cors())
 
           app.use(function (req, res, next) {
-            res.header("Access-Control-Allow-Origin", "*");
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            next();
+            console.log(req.method);
+            if (req.method === 'OPTIONS') {
+              res.sendStatus(200);
+            } else {
+              next();
+            }
           });
 
           /*app.use('/graphql', bodyParser.json(), graphqlExpress({
@@ -513,7 +516,7 @@ var start = exports.start = function _callee() {
             context: 'asd'
           }))*/
 
-          app.use('/graphql', _bodyParser2.default.json(), (0, _graphqlServerExpress.graphqlExpress)(function (req, res) {
+          app.use('/graphql', (0, _cors2.default)(), _bodyParser2.default.json(), (0, _graphqlServerExpress.graphqlExpress)(function (req, res) {
             return {
               schema: schema,
               context: {
