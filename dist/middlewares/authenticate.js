@@ -8,11 +8,9 @@ var _jsonwebtoken = require('jsonwebtoken');
 
 var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 
-var _config = require('../../config');
-
-var _config2 = _interopRequireDefault(_config);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var jwtSecret = process.env.jwtSecret;
 
 exports.default = function _callee2(req, res, models) {
 	var authorizationHeader, token;
@@ -29,7 +27,7 @@ exports.default = function _callee2(req, res, models) {
 					}
 
 					if (token) {
-						_jsonwebtoken2.default.verify(token, _config2.default.jwtSecret, function _callee(err, decoded) {
+						_jsonwebtoken2.default.verify(token, jwtSecret, function _callee(err, decoded) {
 							var Users;
 							return regeneratorRuntime.async(function _callee$(_context) {
 								while (1) {

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import config from '../../config';
+
+const jwtSecret = process.env.jwtSecret
 
 export default async (req, res, models) => {
 	const authorizationHeader = req.headers['authorization'];
@@ -10,7 +11,7 @@ export default async (req, res, models) => {
 	}
 
 	if (token) {
-		jwt.verify(token, config.jwtSecret, async (err, decoded) => {
+		jwt.verify(token, jwtSecret, async (err, decoded) => {
 			if (err) {
 				res.status(401).json({
 					error: 'Failed to authenticate'
