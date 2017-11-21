@@ -27,7 +27,7 @@ const mongoURL = process.env.mongoURL
 
 
 const URL = 'http://localhost'
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 //const MONGO_URL = 'mongodb://localhost:27017/tustak'
 const MONGO_URL = mongoURL
 

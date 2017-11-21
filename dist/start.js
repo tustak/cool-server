@@ -72,7 +72,7 @@ var jwtSecret = process.env.jwtSecret;
 var mongoURL = process.env.mongoURL;
 
 var URL = 'http://localhost';
-var PORT = 3001;
+var PORT = process.env.PORT || 3001;
 //const MONGO_URL = 'mongodb://localhost:27017/tustak'
 var MONGO_URL = mongoURL;
 
