@@ -11,7 +11,6 @@ import isEmpty from 'lodash/isEmpty'
 
 //-Files---
 import getModels from './models'
-import config from '../config'
 import typeDefs from './typeDefs.js'
 import validateInput from './utils/formValidation'
 import validationError from './errors/validationError'
@@ -19,10 +18,18 @@ import authenticate from './middlewares/authenticate'
 import fix from './utils/fix'
 //---------
 
+
+// COnfig
+const jwtSecret = process.env.jwtSecret
+const mongoURL = process.env.mongoURL
+
+
+
+
 const URL = 'http://localhost'
 const PORT = 3001
 //const MONGO_URL = 'mongodb://localhost:27017/tustak'
-const MONGO_URL = config.mongoURL
+const MONGO_URL = mongoURL
 
 const prepare = (o) => {
   o._id = o._id.toString()
@@ -88,7 +95,7 @@ export const start = async () => {
             const user = prepare(await Users.findOne({_id: res.insertedIds[0]}))
             const token = jwt.sign(
                 _.omit(user, 'password'), 
-                config.jwtSecret)
+                jwtSecret)
               return {token, user}
           }
         },
@@ -99,7 +106,7 @@ export const start = async () => {
             if (user) {
               const token = jwt.sign(
                 _.omit(user, 'password'), 
-                config.jwtSecret)
+                jwtSecret)
               return {token, user}
             }
             else {
@@ -111,7 +118,7 @@ export const start = async () => {
             if (user) {
               const token = jwt.sign(
                 _.omit(user, 'password'), 
-                config.jwtSecret)
+                jwtSecret)
               return {token, user}
             }
             else {
@@ -147,7 +154,7 @@ export const start = async () => {
           if (user) {
             const token = jwt.sign(
                 _.omit(user, 'password'), 
-                config.jwtSecret)
+                jwtSecret)
               return {token, user}
           }
         },
