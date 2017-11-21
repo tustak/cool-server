@@ -503,7 +503,8 @@ var start = exports.start = function _callee() {
           //app.use(cors())
 
           app.use(function (req, res, next) {
-            console.log(req.method);
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             if (req.method === 'OPTIONS') {
               res.sendStatus(200);
             } else {
