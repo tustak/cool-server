@@ -57,11 +57,19 @@ export const start = async () => {
         },
       },
       User: {
-        published: async ({_id}) => {
-          return (await Items.find({itemId: _id}).toArray()).map(prepare)
+        offered: async (user) => {
+          return (
+            await Items.find(
+              {_id: {$in: user.offered}}
+            ).toArray()
+          )
         },
-        requested: async ({_id}) => {
-          return (await Items.find({itemId: _id}).toArray()).map(prepare)
+        requested: async (user) => {
+          return (
+            await Items.find(
+              {_id: {$in: user.requested}}
+            ).toArray()
+          )
         }
       },
       Item: {
@@ -71,7 +79,7 @@ export const start = async () => {
       },
       Mutation: {
         createUser: async (root, args, context, info) => {
-          let errors = validateInput(args)
+          let errors = validateInput(_.omit(args, 'offered', 'requested'))
           if (await Users.findOne({username: args.username.toLowerCase()})) {
             errors['username'] = `User ${args.username.toLowerCase()} already exists`
           }
@@ -169,6 +177,11 @@ export const start = async () => {
           }
 
           else {
+            // Create item
+            console.log(args)
+            const res = await Items.insert(fix(args))
+            const item = prepare(await Items.findOne({_id: res.insertedIds[0]}))
+
             // Update user last location
             const updatedUser = await Users.findOneAndUpdate(
               {_id: ObjectId(args.userId)},
@@ -176,18 +189,23 @@ export const start = async () => {
                 {
                   lastLocation: args.location,
                   lastLatitude: args.latitude,
-                  lastLongitude: args.longitude
+                  lastLongitude: args.longitude,
+                },
+               $push: 
+                {
+                  offered: res.insertedIds[0]
                 }
               },
               {returnNewDocument: true}
             )
-            // Create item
-            console.log(args)
-            const res = await Items.insert(fix(args))
-            const item = prepare(await Items.findOne({_id: res.insertedIds[0]}))
-
-
-            return item
+            
+            const user = await Users.findOne({_id: ObjectId(args.userId)})
+            if (item && user) {
+              const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, item}
+            }
           }
         },
 

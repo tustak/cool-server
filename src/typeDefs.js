@@ -12,6 +12,11 @@ const typeDefs = [`
       user: User
     }
 
+    type ItemToken {
+      token: String
+      item: Item
+    }
+
     type User {
       _id: String
       username: String!
@@ -41,7 +46,7 @@ const typeDefs = [`
       validPhone: Boolean
       validEmail: Boolean
       facebookFriends: Int
-      published: [Item!]
+      offered: [Item!]
       requested: [Item!]
       isAdmin: Boolean
       isSuperAdmin: Boolean
@@ -63,10 +68,10 @@ const typeDefs = [`
     }
 
     type Mutation {
-      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!): SigninPayload
+      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String]): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
-      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!): Item
+      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!): ItemToken
       deleteUser(username: String): User
     }
 

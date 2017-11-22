@@ -181,40 +181,36 @@ var start = exports.start = function _callee() {
               }
             },
             User: {
-              published: function published(_ref3) {
-                var _id = _ref3._id;
-                return regeneratorRuntime.async(function published$(_context5) {
+              offered: function offered(user) {
+                return regeneratorRuntime.async(function offered$(_context5) {
                   while (1) {
                     switch (_context5.prev = _context5.next) {
                       case 0:
                         _context5.next = 2;
-                        return regeneratorRuntime.awrap(Items.find({ itemId: _id }).toArray());
+                        return regeneratorRuntime.awrap(Items.find({ _id: { $in: user.offered } }).toArray());
 
                       case 2:
-                        _context5.t0 = prepare;
-                        return _context5.abrupt('return', _context5.sent.map(_context5.t0));
+                        return _context5.abrupt('return', _context5.sent);
 
-                      case 4:
+                      case 3:
                       case 'end':
                         return _context5.stop();
                     }
                   }
                 }, null, undefined);
               },
-              requested: function requested(_ref4) {
-                var _id = _ref4._id;
+              requested: function requested(user) {
                 return regeneratorRuntime.async(function requested$(_context6) {
                   while (1) {
                     switch (_context6.prev = _context6.next) {
                       case 0:
                         _context6.next = 2;
-                        return regeneratorRuntime.awrap(Items.find({ itemId: _id }).toArray());
+                        return regeneratorRuntime.awrap(Items.find({ _id: { $in: user.requested } }).toArray());
 
                       case 2:
-                        _context6.t0 = prepare;
-                        return _context6.abrupt('return', _context6.sent.map(_context6.t0));
+                        return _context6.abrupt('return', _context6.sent);
 
-                      case 4:
+                      case 3:
                       case 'end':
                         return _context6.stop();
                     }
@@ -223,8 +219,8 @@ var start = exports.start = function _callee() {
               }
             },
             Item: {
-              user: function user(_ref5) {
-                var userId = _ref5.userId;
+              user: function user(_ref3) {
+                var userId = _ref3.userId;
                 return regeneratorRuntime.async(function user$(_context7) {
                   while (1) {
                     switch (_context7.prev = _context7.next) {
@@ -252,7 +248,7 @@ var start = exports.start = function _callee() {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
                       case 0:
-                        errors = (0, _formValidation2.default)(args);
+                        errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'offered', 'requested'));
                         _context8.next = 3;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.username.toLowerCase() }));
 
@@ -441,7 +437,7 @@ var start = exports.start = function _callee() {
                 }, null, undefined);
               },
               createItem: function createItem(root, args, context, info) {
-                var errors, errorList, updatedUser, res, item;
+                var errors, errorList, res, item, updatedUser, user, token;
                 return regeneratorRuntime.async(function createItem$(_context11) {
                   while (1) {
                     switch (_context11.prev = _context11.next) {
@@ -461,34 +457,48 @@ var start = exports.start = function _callee() {
                         throw new _validationError2.default(errorList);
 
                       case 7:
-                        _context11.next = 9;
+                        // Create item
+                        console.log(args);
+                        _context11.next = 10;
+                        return regeneratorRuntime.awrap(Items.insert((0, _fix2.default)(args)));
+
+                      case 10:
+                        res = _context11.sent;
+                        _context11.t0 = prepare;
+                        _context11.next = 14;
+                        return regeneratorRuntime.awrap(Items.findOne({ _id: res.insertedIds[0] }));
+
+                      case 14:
+                        _context11.t1 = _context11.sent;
+                        item = (0, _context11.t0)(_context11.t1);
+                        _context11.next = 18;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userId) }, { $set: {
                             lastLocation: args.location,
                             lastLatitude: args.latitude,
                             lastLongitude: args.longitude
+                          },
+                          $push: {
+                            offered: res.insertedIds[0]
                           }
                         }, { returnNewDocument: true }));
 
-                      case 9:
+                      case 18:
                         updatedUser = _context11.sent;
+                        _context11.next = 21;
+                        return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args.userId) }));
 
-                        // Create item
-                        console.log(args);
-                        _context11.next = 13;
-                        return regeneratorRuntime.awrap(Items.insert((0, _fix2.default)(args)));
+                      case 21:
+                        user = _context11.sent;
 
-                      case 13:
-                        res = _context11.sent;
-                        _context11.t0 = prepare;
-                        _context11.next = 17;
-                        return regeneratorRuntime.awrap(Items.findOne({ _id: res.insertedIds[0] }));
+                        if (!(item && user)) {
+                          _context11.next = 25;
+                          break;
+                        }
 
-                      case 17:
-                        _context11.t1 = _context11.sent;
-                        item = (0, _context11.t0)(_context11.t1);
-                        return _context11.abrupt('return', item);
+                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
+                        return _context11.abrupt('return', { token: token, item: item });
 
-                      case 20:
+                      case 25:
                       case 'end':
                         return _context11.stop();
                     }
