@@ -64,6 +64,7 @@ const typeDefs = [`
       latitude: Float!
       longitude: Float!
       description: String!
+      picturePath: String!
       user: User
     }
 
@@ -71,7 +72,7 @@ const typeDefs = [`
       createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String]): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
-      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!): ItemToken
+      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!): ItemToken
       deleteUser(username: String): User
     }
 

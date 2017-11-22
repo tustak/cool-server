@@ -10,12 +10,7 @@ function lowerCase(array) {
 		if (key === 'firstName' || key === 'lastName') {
 			newArray[key] = capitalizeFirstLetter(array[key])
 		}
-		else if (key !== 'password' && key !== 'offered' && key !== 'requested') {
-			newArray[key] = array[key].toLowerCase()
-		}
-		else {
-			newArray[key] = array[key]	
-		}
+		newArray[key] = array[key]
 	})
 	return newArray
 }
