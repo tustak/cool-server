@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 var _mongodb = require('mongodb');
 
 //const MONGO_URL = 'mongodb://localhost:27017/tustak'
-var MONGO_URL = process.env.mongoURL;
+var MONGO_URL = process.env.mongoURL || 'mongodb://localhost:27017/tustak';
 
 var db;
 var Users;

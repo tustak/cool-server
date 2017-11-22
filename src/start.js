@@ -20,11 +20,8 @@ import fix from './utils/fix'
 
 
 // COnfig
-const jwtSecret = process.env.jwtSecret
-const mongoURL = process.env.mongoURL
-
-
-
+const jwtSecret = process.env.jwtSecret || require('../config').default.jwtSecret
+const mongoURL = process.env.mongoURL || 'mongodb://localhost:27017/tustak'
 
 const URL = 'http://localhost'
 const PORT = process.env.PORT || 3001
@@ -52,7 +49,7 @@ export const start = async () => {
         users: async () => {
           return (await Users.find({}).toArray()).map(prepare)
         },
-        item: async (root, {_id}) => {
+        itemById: async (root, {_id}) => {
           return prepare(await Items.findOne(ObjectId(_id)))
         },
         items: async () => {
@@ -158,13 +155,45 @@ export const start = async () => {
               return {token, user}
           }
         },
+        createItem: async (root, args, context, info) => {
+          let errors = validateInput(args)
+
+          if (!isEmpty(errors)) {
+            const errorList = []
+            Object.keys(errors).map(
+              key => {
+                errorList.push(errors[key])
+              }
+            )
+            throw new validationError(errorList)
+          }
+
+          else {
+            // Update user last location
+            const updatedUser = await Users.findOneAndUpdate(
+              {_id: ObjectId(args.userId)},
+              {$set:
+                {
+                  lastLocation: args.location,
+                  lastLatitude: args.latitude,
+                  lastLongitude: args.longitude
+                }
+              },
+              {returnNewDocument: true}
+            )
+            // Create item
+            console.log(args)
+            const res = await Items.insert(fix(args))
+            const item = prepare(await Items.findOne({_id: res.insertedIds[0]}))
+
+
+            return item
+          }
+        },
+
         deleteUser: async (root, args, context, info) => {
           const res = await Users.findOneAndDelete(args)
           return prepare(await res.value)
-        },
-        createItem: async (root, args) => {
-          const res = await Items.insert(args)
-          return prepare(await Items.findOne({_id: res.insertedIds[0]}))
         },
       },
     }

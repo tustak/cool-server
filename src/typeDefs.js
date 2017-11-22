@@ -3,7 +3,7 @@ const typeDefs = [`
       userById(_id: String): User
       userByUsernameOrEmail(usernameOrEmail: String!, password: String!): User
       users: [User]
-      item(_id: String): Item
+      itemById(_id: String): Item
       items: [Item]
     }
 
@@ -47,13 +47,18 @@ const typeDefs = [`
       isSuperAdmin: Boolean
       registered: String
       lastConnection: String
-      lastLocation: [Float!]
+      lastLocation: String
+      lastLatitude: Float
+      lastLongitude: Float
     }
 
     type Item {
       _id: String
-      name: String
-      description: String
+      name: String!
+      location: String!
+      latitude: Float!
+      longitude: Float!
+      description: String!
       user: User
     }
 
@@ -61,8 +66,8 @@ const typeDefs = [`
       createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
+      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!): Item
       deleteUser(username: String): User
-      createItem(name: String, description: String, userId: String): Item
     }
 
     schema {

@@ -68,8 +68,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 
 //-Files---
-var jwtSecret = process.env.jwtSecret;
-var mongoURL = process.env.mongoURL;
+var jwtSecret = process.env.jwtSecret || require('../config').default.jwtSecret;
+var mongoURL = process.env.mongoURL || 'mongodb://localhost:27017/tustak';
 
 var URL = 'http://localhost';
 var PORT = process.env.PORT || 3001;
@@ -139,9 +139,9 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              item: function item(root, _ref2) {
+              itemById: function itemById(root, _ref2) {
                 var _id = _ref2._id;
-                return regeneratorRuntime.async(function item$(_context3) {
+                return regeneratorRuntime.async(function itemById$(_context3) {
                   while (1) {
                     switch (_context3.prev = _context3.next) {
                       case 0:
@@ -440,46 +440,76 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              deleteUser: function deleteUser(root, args, context, info) {
-                var res;
-                return regeneratorRuntime.async(function deleteUser$(_context11) {
+              createItem: function createItem(root, args, context, info) {
+                var errors, errorList, updatedUser, res, item;
+                return regeneratorRuntime.async(function createItem$(_context11) {
                   while (1) {
                     switch (_context11.prev = _context11.next) {
                       case 0:
-                        _context11.next = 2;
-                        return regeneratorRuntime.awrap(Users.findOneAndDelete(args));
+                        errors = (0, _formValidation2.default)(args);
 
-                      case 2:
+                        if ((0, _isEmpty2.default)(errors)) {
+                          _context11.next = 7;
+                          break;
+                        }
+
+                        errorList = [];
+
+                        Object.keys(errors).map(function (key) {
+                          errorList.push(errors[key]);
+                        });
+                        throw new _validationError2.default(errorList);
+
+                      case 7:
+                        _context11.next = 9;
+                        return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userId) }, { $set: {
+                            lastLocation: args.location,
+                            lastLatitude: args.latitude,
+                            lastLongitude: args.longitude
+                          }
+                        }, { returnNewDocument: true }));
+
+                      case 9:
+                        updatedUser = _context11.sent;
+
+                        // Create item
+                        console.log(args);
+                        _context11.next = 13;
+                        return regeneratorRuntime.awrap(Items.insert((0, _fix2.default)(args)));
+
+                      case 13:
                         res = _context11.sent;
                         _context11.t0 = prepare;
-                        _context11.next = 6;
-                        return regeneratorRuntime.awrap(res.value);
+                        _context11.next = 17;
+                        return regeneratorRuntime.awrap(Items.findOne({ _id: res.insertedIds[0] }));
 
-                      case 6:
+                      case 17:
                         _context11.t1 = _context11.sent;
-                        return _context11.abrupt('return', (0, _context11.t0)(_context11.t1));
+                        item = (0, _context11.t0)(_context11.t1);
+                        return _context11.abrupt('return', item);
 
-                      case 8:
+                      case 20:
                       case 'end':
                         return _context11.stop();
                     }
                   }
                 }, null, undefined);
               },
-              createItem: function createItem(root, args) {
+
+              deleteUser: function deleteUser(root, args, context, info) {
                 var res;
-                return regeneratorRuntime.async(function createItem$(_context12) {
+                return regeneratorRuntime.async(function deleteUser$(_context12) {
                   while (1) {
                     switch (_context12.prev = _context12.next) {
                       case 0:
                         _context12.next = 2;
-                        return regeneratorRuntime.awrap(Items.insert(args));
+                        return regeneratorRuntime.awrap(Users.findOneAndDelete(args));
 
                       case 2:
                         res = _context12.sent;
                         _context12.t0 = prepare;
                         _context12.next = 6;
-                        return regeneratorRuntime.awrap(Items.findOne({ _id: res.insertedIds[0] }));
+                        return regeneratorRuntime.awrap(res.value);
 
                       case 6:
                         _context12.t1 = _context12.sent;

@@ -34,6 +34,10 @@ function validateInput(data, allowEmpty=false) {
 
     keys.map(k => {
 
+        if (typeof data[k] !== 'string') {
+            data[k] = String(data[k])
+        }
+
         if (k === 'email') {
             if (!Validator.isEmail(data[k])) {
                 errors[k] = 'Email is invalid';
