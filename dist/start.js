@@ -248,33 +248,34 @@ var start = exports.start = function _callee() {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
                       case 0:
+                        console.log(args);
                         errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'offered', 'requested'));
-                        _context8.next = 3;
+                        _context8.next = 4;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.username.toLowerCase() }));
 
-                      case 3:
+                      case 4:
                         if (!_context8.sent) {
-                          _context8.next = 5;
+                          _context8.next = 6;
                           break;
                         }
 
                         errors['username'] = 'User ' + args.username.toLowerCase() + ' already exists';
 
-                      case 5:
-                        _context8.next = 7;
+                      case 6:
+                        _context8.next = 8;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.email.toLowerCase() }));
 
-                      case 7:
+                      case 8:
                         if (!_context8.sent) {
-                          _context8.next = 9;
+                          _context8.next = 10;
                           break;
                         }
 
                         errors['email'] = 'Email already used';
 
-                      case 9:
+                      case 10:
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context8.next = 15;
+                          _context8.next = 16;
                           break;
                         }
 
@@ -285,23 +286,26 @@ var start = exports.start = function _callee() {
                         });
                         throw new _validationError2.default(errorList);
 
-                      case 15:
-                        _context8.next = 17;
+                      case 16:
+                        console.log(args);
+                        _context8.next = 19;
                         return regeneratorRuntime.awrap(Users.insert((0, _fix2.default)(args)));
 
-                      case 17:
+                      case 19:
                         res = _context8.sent;
+
+                        console.log(res);
                         _context8.t0 = prepare;
-                        _context8.next = 21;
+                        _context8.next = 24;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: res.insertedIds[0] }));
 
-                      case 21:
+                      case 24:
                         _context8.t1 = _context8.sent;
                         user = (0, _context8.t0)(_context8.t1);
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
                         return _context8.abrupt('return', { token: token, user: user });
 
-                      case 25:
+                      case 28:
                       case 'end':
                         return _context8.stop();
                     }
@@ -552,6 +556,32 @@ var start = exports.start = function _callee() {
             }
           });
 
+          // Check if token has been modified
+          app.use(function (req, res, next) {
+            var token = req.headers.authorization.split(' ')[1];
+            if (token != "null") {
+              // null or undefined
+              try {
+                var decoded = _jsonwebtoken2.default.verify(token, jwtSecret);
+                res.locals.user = decoded;
+              } catch (err) {
+                res.sendStatus(401);
+              }
+            }
+            next();
+          });
+
+          // Register last activity of user
+          app.use(function (req, res, next) {
+            if (res.locals.user) {
+              var userId = res.locals.user._id;
+              var now = new Date().toISOString();
+              var updatedUser = Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(userId) }, { $set: { lastConnection: now }
+              });
+            }
+            next();
+          });
+
           /*app.use('/graphql', bodyParser.json(), graphqlExpress({
             schema: schema,
             context: 'asd'
@@ -575,19 +605,19 @@ var start = exports.start = function _callee() {
             console.log('Visit ' + URL + ':' + PORT);
           });
 
-          _context13.next = 18;
+          _context13.next = 20;
           break;
 
-        case 15:
-          _context13.prev = 15;
+        case 17:
+          _context13.prev = 17;
           _context13.t0 = _context13['catch'](0);
 
           console.log(_context13.t0);
 
-        case 18:
+        case 20:
         case 'end':
           return _context13.stop();
       }
     }
-  }, null, undefined, [[0, 15]]);
+  }, null, undefined, [[0, 17]]);
 };

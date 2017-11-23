@@ -234,6 +234,35 @@ export const start = async () => {
       }
     });
 
+    // Check if token has been modified
+    app.use(function(req, res, next) {
+      const token = req.headers.authorization.split(' ')[1]
+      if(token != "null") { // null or undefined
+        try {
+          const decoded = jwt.verify(token, jwtSecret)
+          res.locals.user = decoded
+        } catch(err) {
+          res.sendStatus(401)
+        }  
+      }
+      next()
+    });
+
+    // Register last activity of user
+    app.use(function(req, res, next) {
+      if (res.locals.user) {
+        const userId = res.locals.user._id
+        const now = new Date().toISOString()
+        const updatedUser = Users.findOneAndUpdate(
+          {_id: ObjectId(userId)}, 
+          {$set: 
+            {lastConnection: now}
+          }, 
+        )
+      }
+      next()
+    });
+
     /*app.use('/graphql', bodyParser.json(), graphqlExpress({
       schema: schema,
       context: 'asd'

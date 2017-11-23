@@ -65,14 +65,15 @@ const typeDefs = [`
       longitude: Float!
       description: String!
       picturePath: String!
+      created: String!
       user: User
     }
 
     type Mutation {
-      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String]): SigninPayload
+      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
-      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!): ItemToken
+      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!): ItemToken
       deleteUser(username: String): User
     }
 
