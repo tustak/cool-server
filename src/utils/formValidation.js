@@ -34,7 +34,7 @@ function validateInput(data, allowEmpty=false) {
 
     keys.map(k => {
 
-        if (typeof data[k] !== 'string') {
+        if (typeof data[k] !== 'string' && typeof data[k] !== 'object') {
             data[k] = String(data[k])
         }
 

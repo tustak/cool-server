@@ -10,7 +10,7 @@ var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var jwtSecret = process.env.jwtSecret;
+var jwtSecret = process.env.jwtSecret || require('../../config').default.jwtSecret;
 
 exports.default = function _callee2(req, res, models) {
 	var authorizationHeader, token;

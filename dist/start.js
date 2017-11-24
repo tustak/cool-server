@@ -248,34 +248,33 @@ var start = exports.start = function _callee() {
                   while (1) {
                     switch (_context8.prev = _context8.next) {
                       case 0:
-                        console.log(args);
                         errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'offered', 'requested'));
-                        _context8.next = 4;
+                        _context8.next = 3;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.username.toLowerCase() }));
 
-                      case 4:
+                      case 3:
                         if (!_context8.sent) {
-                          _context8.next = 6;
+                          _context8.next = 5;
                           break;
                         }
 
                         errors['username'] = 'User ' + args.username.toLowerCase() + ' already exists';
 
-                      case 6:
-                        _context8.next = 8;
+                      case 5:
+                        _context8.next = 7;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.email.toLowerCase() }));
 
-                      case 8:
+                      case 7:
                         if (!_context8.sent) {
-                          _context8.next = 10;
+                          _context8.next = 9;
                           break;
                         }
 
                         errors['email'] = 'Email already used';
 
-                      case 10:
+                      case 9:
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context8.next = 16;
+                          _context8.next = 15;
                           break;
                         }
 
@@ -286,26 +285,23 @@ var start = exports.start = function _callee() {
                         });
                         throw new _validationError2.default(errorList);
 
-                      case 16:
-                        console.log(args);
-                        _context8.next = 19;
+                      case 15:
+                        _context8.next = 17;
                         return regeneratorRuntime.awrap(Users.insert((0, _fix2.default)(args)));
 
-                      case 19:
+                      case 17:
                         res = _context8.sent;
-
-                        console.log(res);
                         _context8.t0 = prepare;
-                        _context8.next = 24;
+                        _context8.next = 21;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: res.insertedIds[0] }));
 
-                      case 24:
+                      case 21:
                         _context8.t1 = _context8.sent;
                         user = (0, _context8.t0)(_context8.t1);
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
                         return _context8.abrupt('return', { token: token, user: user });
 
-                      case 28:
+                      case 25:
                       case 'end':
                         return _context8.stop();
                     }
@@ -564,11 +560,18 @@ var start = exports.start = function _callee() {
               try {
                 var decoded = _jsonwebtoken2.default.verify(token, jwtSecret);
                 res.locals.user = decoded;
+                next();
               } catch (err) {
                 res.sendStatus(401);
               }
+            } else {
+              next();
             }
-            next();
+          });
+
+          process.on('unhandledRejection', function (reason, p) {
+            console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+            // application specific logging, throwing an error, or other logic here
           });
 
           // Register last activity of user
@@ -605,19 +608,19 @@ var start = exports.start = function _callee() {
             console.log('Visit ' + URL + ':' + PORT);
           });
 
-          _context13.next = 20;
+          _context13.next = 21;
           break;
 
-        case 17:
-          _context13.prev = 17;
+        case 18:
+          _context13.prev = 18;
           _context13.t0 = _context13['catch'](0);
 
           console.log(_context13.t0);
 
-        case 20:
+        case 21:
         case 'end':
           return _context13.stop();
       }
     }
-  }, null, undefined, [[0, 17]]);
+  }, null, undefined, [[0, 18]]);
 };

@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var Validator = require('validator');
 var isEmpty = require('lodash/isEmpty');
 var moment = require('moment');
@@ -23,7 +25,7 @@ function validateInput(data) {
 
     keys.map(function (k) {
 
-        if (typeof data[k] !== 'string') {
+        if (typeof data[k] !== 'string' && _typeof(data[k]) !== 'object') {
             data[k] = String(data[k]);
         }
 

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const jwtSecret = process.env.jwtSecret
+const jwtSecret = process.env.jwtSecret || require('../../config').default.jwtSecret
 
 export default async (req, res, models) => {
 	const authorizationHeader = req.headers['authorization'];

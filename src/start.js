@@ -241,11 +241,19 @@ export const start = async () => {
         try {
           const decoded = jwt.verify(token, jwtSecret)
           res.locals.user = decoded
+          next()
         } catch(err) {
           res.sendStatus(401)
         }  
       }
-      next()
+      else {
+        next()
+      }
+    });
+
+    process.on('unhandledRejection', (reason, p) => {
+      console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+      // application specific logging, throwing an error, or other logic here
     });
 
     // Register last activity of user
