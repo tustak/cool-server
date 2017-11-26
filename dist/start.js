@@ -621,32 +621,58 @@ var start = exports.start = function _callee() {
               },
 
               createView: function createView(root, args, context, info) {
-                var res, updateItem;
+                var thisItem, checkView, res, updateItemViews, updateItemViewCOunt;
                 return regeneratorRuntime.async(function createView$(_context16) {
                   while (1) {
                     switch (_context16.prev = _context16.next) {
                       case 0:
-                        console.log(args);
-                        _context16.next = 3;
+                        _context16.next = 2;
+                        return regeneratorRuntime.awrap(Items.findOne({ _id: (0, _mongodb.ObjectId)(args.item) }));
+
+                      case 2:
+                        thisItem = _context16.sent;
+                        _context16.next = 5;
+                        return regeneratorRuntime.awrap(Views.findOne({
+                          user: args.user,
+                          item: args.item
+                        }));
+
+                      case 5:
+                        checkView = _context16.sent;
+                        _context16.next = 8;
                         return regeneratorRuntime.awrap(Views.insert(args));
 
-                      case 3:
+                      case 8:
                         res = _context16.sent;
-                        _context16.next = 6;
+                        _context16.next = 11;
                         return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
                           $push: {
                             views: res.insertedIds[0]
-                          },
+                          }
+                        }));
+
+                      case 11:
+                        updateItemViews = _context16.sent;
+
+                        if (checkView) {
+                          _context16.next = 16;
+                          break;
+                        }
+
+                        _context16.next = 15;
+                        return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
                           $inc: {
                             viewCount: 1
                           }
                         }));
 
-                      case 6:
-                        updateItem = _context16.sent;
+                      case 15:
+                        updateItemViewCOunt = _context16.sent;
+
+                      case 16:
                         return _context16.abrupt('return', true);
 
-                      case 8:
+                      case 17:
                       case 'end':
                         return _context16.stop();
                     }

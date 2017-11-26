@@ -257,22 +257,43 @@ export const start = async () => {
         },
 
         createView: async (root, args, context, info) => {
-          console.log(args)
-          const res = await Views.insert(args)
-          const updateItem = await Items.findOneAndUpdate(
-            {_id: ObjectId(args.item)},
-            {
-              $push:
+          // Get item if for checking if it's from the same user
+          const thisItem = await Items.findOne({_id: ObjectId(args.item)})
+
+          //if (thisItem.userId !== args.user) { //if same user
+            // Check if user has already visited this item
+            const checkView = await Views.findOne({
+              user: args.user,
+              item: args.item
+            })
+
+            // Insert (even if exists. History might be useful some day)
+            const res = await Views.insert(args)
+            const updateItemViews = await Items.findOneAndUpdate(
+              {_id: ObjectId(args.item)},
               {
-                views: res.insertedIds[0]
-              },
-              $inc:
-              {
-                viewCount: 1
+                $push:
+                {
+                  views: res.insertedIds[0]
+                }
               }
+            )
+            if (!checkView) {
+              const updateItemViewCOunt = await Items.findOneAndUpdate(
+              {_id: ObjectId(args.item)},
+              {
+                $inc:
+                {
+                  viewCount: 1
+                }
+              }
+            )
             }
-          )
-          return true
+            return true
+          //}
+         // else {
+          //  return false
+         // }
         },
       },
     }
