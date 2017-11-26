@@ -40,6 +40,7 @@ export const start = async () => {
 
     const Users = models.Users//db.collection('users')
     const Items = models.Items//db.collection('items')
+    const Views = models.Views
 
     const resolvers = {
       Query: {
@@ -75,6 +76,21 @@ export const start = async () => {
       Item: {
         user: async ({userId}) => {
           return prepare(await Users.findOne(ObjectId(userId)))
+        },
+        views: async (item) => {
+          return (
+            await Views.find(
+              {_id: {$in: item.views}}
+            ).toArray()
+          )
+        }
+      },
+      View: {
+        user: async ({userId}) => {
+          return prepare(await Users.findOne(ObjectId(userId)))
+        },
+        item: async ({itemId}) => {
+          return prepare(await Items.findOne(ObjectId(itemId)))
         }
       },
       Mutation: {
@@ -163,8 +179,40 @@ export const start = async () => {
               return {token, user}
           }
         },
+        changePassword: async(root, args, context, info) => {
+          const currentUser = authenticate(context.req, context.res, models)
+          let errors = validateInput(args, true)
+          if (!isEmpty(errors)) {
+            const errorList = []
+            Object.keys(errors).map(
+              key => {
+                errorList.push(errors[key])
+              }
+            )
+            throw new validationError(errorList)
+          }
+
+          const updatedUser = await Users.findOneAndUpdate(
+            {_id: ObjectId(args._id), password: args.currentPassword}, 
+            {$set: 
+              {password: args.password}
+            }, 
+            {returnNewDocument: true}
+          )
+          const user = await Users.findOne({_id: ObjectId(args._id), password: args.password})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Password incorrect")
+          }
+        },
         createItem: async (root, args, context, info) => {
-          let errors = validateInput(args)
+          console.log(args)
+          let errors = validateInput(_.omit(args, 'views'))
 
           if (!isEmpty(errors)) {
             const errorList = []
@@ -178,7 +226,6 @@ export const start = async () => {
 
           else {
             // Create item
-            console.log(args)
             const res = await Items.insert(fix(args))
             const item = prepare(await Items.findOne({_id: res.insertedIds[0]}))
 
@@ -209,9 +256,23 @@ export const start = async () => {
           }
         },
 
-        deleteUser: async (root, args, context, info) => {
-          const res = await Users.findOneAndDelete(args)
-          return prepare(await res.value)
+        createView: async (root, args, context, info) => {
+          console.log(args)
+          const res = await Views.insert(args)
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $push:
+              {
+                views: res.insertedIds[0]
+              },
+              $inc:
+              {
+                viewCount: 1
+              }
+            }
+          )
+          return true
         },
       },
     }
@@ -236,18 +297,23 @@ export const start = async () => {
 
     // Check if token has been modified
     app.use(function(req, res, next) {
-      const token = req.headers.authorization.split(' ')[1]
-      if(token != "null") { // null or undefined
-        try {
-          const decoded = jwt.verify(token, jwtSecret)
-          res.locals.user = decoded
+      if (req.headers.authorization) {
+        const token = req.headers.authorization.split(' ')[1]
+        if(token != "null") { // null or undefined
+          try {
+            const decoded = jwt.verify(token, jwtSecret)
+            res.locals.user = decoded
+            next()
+          } catch(err) {
+            res.sendStatus(401)
+          }  
+        }
+        else {
           next()
-        } catch(err) {
-          res.sendStatus(401)
-        }  
+        }
       }
       else {
-        next()
+        res.sendStatus(401)
       }
     });
 
@@ -270,11 +336,6 @@ export const start = async () => {
       }
       next()
     });
-
-    /*app.use('/graphql', bodyParser.json(), graphqlExpress({
-      schema: schema,
-      context: 'asd'
-    }))*/
 
     app.use('/graphql', cors(), bodyParser.json(),
       graphqlExpress((req, res) => ({

@@ -12,6 +12,7 @@ var MONGO_URL = process.env.mongoURL || 'mongodb://localhost:27017/tustak';
 var db;
 var Users;
 var Items;
+var Views;
 
 var getModels = function _callee() {
 	return regeneratorRuntime.async(function _callee$(_context) {
@@ -28,20 +29,21 @@ var getModels = function _callee() {
 
 					Users = db.collection('users');
 					Items = db.collection('items');
-					return _context.abrupt('return', { Users: Users, Items: Items });
+					Views = db.collection('views');
+					return _context.abrupt('return', { Users: Users, Items: Items, Views: Views });
 
-				case 9:
-					_context.prev = 9;
+				case 10:
+					_context.prev = 10;
 					_context.t0 = _context['catch'](0);
 
 					console.log(_context.t0);
 
-				case 12:
+				case 13:
 				case 'end':
 					return _context.stop();
 			}
 		}
-	}, null, undefined, [[0, 9]]);
+	}, null, undefined, [[0, 10]]);
 };
 
 exports.default = getModels;

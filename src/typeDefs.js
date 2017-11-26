@@ -66,16 +66,27 @@ const typeDefs = [`
       description: String!
       picturePath: String!
       created: String!
+      active: Boolean!
       user: User
+      views: [View]!
+      viewCount: Int!
+    }
+
+    type View {
+      _id: String
+      user: User!
+      item: Item!
+      date: String!
     }
 
     type Mutation {
       createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
-      createItem (name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!): ItemToken
-      deleteUser(username: String): User
-    }
+      changePassword(_id: String!, currentPassword: String!, password: String!, repeatPassword: String!): SigninPayload
+      createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, active: Boolean!, views: [String]!, viewCount: Int!): ItemToken
+      createView(user: String!, item: String!, date: String!): Boolean
+  }
 
     schema {
       query: Query
@@ -84,3 +95,13 @@ const typeDefs = [`
   `];
 
   export default typeDefs
+/*
+      type View {
+      _id: String
+      user: User!
+      item: Item!
+      date: String!
+    }
+createView (_id: String, user: User!, item: Item!, date: String!): View
+        
+*/

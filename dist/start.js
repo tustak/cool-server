@@ -82,21 +82,22 @@ var prepare = function prepare(o) {
 };
 
 var start = exports.start = function _callee() {
-  var models, Users, Items, resolvers, schema, app;
-  return regeneratorRuntime.async(function _callee$(_context13) {
+  var models, Users, Items, Views, resolvers, schema, app;
+  return regeneratorRuntime.async(function _callee$(_context17) {
     while (1) {
-      switch (_context13.prev = _context13.next) {
+      switch (_context17.prev = _context17.next) {
         case 0:
-          _context13.prev = 0;
-          _context13.next = 3;
+          _context17.prev = 0;
+          _context17.next = 3;
           return regeneratorRuntime.awrap((0, _models2.default)());
 
         case 3:
-          models = _context13.sent;
+          models = _context17.sent;
           Users = models.Users; //db.collection('users')
 
           Items = models.Items; //db.collection('items')
 
+          Views = models.Views;
           resolvers = {
             Query: {
               userById: function userById(root, _ref) {
@@ -239,34 +240,96 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
+              },
+              views: function views(item) {
+                return regeneratorRuntime.async(function views$(_context8) {
+                  while (1) {
+                    switch (_context8.prev = _context8.next) {
+                      case 0:
+                        _context8.next = 2;
+                        return regeneratorRuntime.awrap(Views.find({ _id: { $in: item.views } }).toArray());
+
+                      case 2:
+                        return _context8.abrupt('return', _context8.sent);
+
+                      case 3:
+                      case 'end':
+                        return _context8.stop();
+                    }
+                  }
+                }, null, undefined);
+              }
+            },
+            View: {
+              user: function user(_ref4) {
+                var userId = _ref4.userId;
+                return regeneratorRuntime.async(function user$(_context9) {
+                  while (1) {
+                    switch (_context9.prev = _context9.next) {
+                      case 0:
+                        _context9.t0 = prepare;
+                        _context9.next = 3;
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
+
+                      case 3:
+                        _context9.t1 = _context9.sent;
+                        return _context9.abrupt('return', (0, _context9.t0)(_context9.t1));
+
+                      case 5:
+                      case 'end':
+                        return _context9.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+              item: function item(_ref5) {
+                var itemId = _ref5.itemId;
+                return regeneratorRuntime.async(function item$(_context10) {
+                  while (1) {
+                    switch (_context10.prev = _context10.next) {
+                      case 0:
+                        _context10.t0 = prepare;
+                        _context10.next = 3;
+                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(itemId)));
+
+                      case 3:
+                        _context10.t1 = _context10.sent;
+                        return _context10.abrupt('return', (0, _context10.t0)(_context10.t1));
+
+                      case 5:
+                      case 'end':
+                        return _context10.stop();
+                    }
+                  }
+                }, null, undefined);
               }
             },
             Mutation: {
               createUser: function createUser(root, args, context, info) {
                 var errors, errorList, res, user, token;
-                return regeneratorRuntime.async(function createUser$(_context8) {
+                return regeneratorRuntime.async(function createUser$(_context11) {
                   while (1) {
-                    switch (_context8.prev = _context8.next) {
+                    switch (_context11.prev = _context11.next) {
                       case 0:
                         errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'offered', 'requested'));
-                        _context8.next = 3;
+                        _context11.next = 3;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.username.toLowerCase() }));
 
                       case 3:
-                        if (!_context8.sent) {
-                          _context8.next = 5;
+                        if (!_context11.sent) {
+                          _context11.next = 5;
                           break;
                         }
 
                         errors['username'] = 'User ' + args.username.toLowerCase() + ' already exists';
 
                       case 5:
-                        _context8.next = 7;
+                        _context11.next = 7;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.email.toLowerCase() }));
 
                       case 7:
-                        if (!_context8.sent) {
-                          _context8.next = 9;
+                        if (!_context11.sent) {
+                          _context11.next = 9;
                           break;
                         }
 
@@ -274,7 +337,7 @@ var start = exports.start = function _callee() {
 
                       case 9:
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context8.next = 15;
+                          _context11.next = 15;
                           break;
                         }
 
@@ -286,24 +349,24 @@ var start = exports.start = function _callee() {
                         throw new _validationError2.default(errorList);
 
                       case 15:
-                        _context8.next = 17;
+                        _context11.next = 17;
                         return regeneratorRuntime.awrap(Users.insert((0, _fix2.default)(args)));
 
                       case 17:
-                        res = _context8.sent;
-                        _context8.t0 = prepare;
-                        _context8.next = 21;
+                        res = _context11.sent;
+                        _context11.t0 = prepare;
+                        _context11.next = 21;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: res.insertedIds[0] }));
 
                       case 21:
-                        _context8.t1 = _context8.sent;
-                        user = (0, _context8.t0)(_context8.t1);
+                        _context11.t1 = _context11.sent;
+                        user = (0, _context11.t0)(_context11.t1);
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context8.abrupt('return', { token: token, user: user });
+                        return _context11.abrupt('return', { token: token, user: user });
 
                       case 25:
                       case 'end':
-                        return _context8.stop();
+                        return _context11.stop();
                     }
                   }
                 }, null, undefined);
@@ -311,69 +374,69 @@ var start = exports.start = function _callee() {
               signinUser: function signinUser(root, args, context, info) {
                 var user, token, _user, _token;
 
-                return regeneratorRuntime.async(function signinUser$(_context9) {
+                return regeneratorRuntime.async(function signinUser$(_context12) {
                   while (1) {
-                    switch (_context9.prev = _context9.next) {
+                    switch (_context12.prev = _context12.next) {
                       case 0:
-                        _context9.next = 2;
+                        _context12.next = 2;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.usernameOrEmail.toLowerCase() }));
 
                       case 2:
-                        if (!_context9.sent) {
-                          _context9.next = 14;
+                        if (!_context12.sent) {
+                          _context12.next = 14;
                           break;
                         }
 
-                        _context9.next = 5;
+                        _context12.next = 5;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.usernameOrEmail.toLowerCase(), password: args.password }));
 
                       case 5:
-                        user = _context9.sent;
+                        user = _context12.sent;
 
                         if (!user) {
-                          _context9.next = 11;
+                          _context12.next = 11;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context9.abrupt('return', { token: token, user: user });
+                        return _context12.abrupt('return', { token: token, user: user });
 
                       case 11:
                         throw new _validationError2.default('Password incorrect');
 
                       case 12:
-                        _context9.next = 29;
+                        _context12.next = 29;
                         break;
 
                       case 14:
-                        _context9.next = 16;
+                        _context12.next = 16;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.usernameOrEmail.toLowerCase() }));
 
                       case 16:
-                        if (!_context9.sent) {
-                          _context9.next = 28;
+                        if (!_context12.sent) {
+                          _context12.next = 28;
                           break;
                         }
 
-                        _context9.next = 19;
+                        _context12.next = 19;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.usernameOrEmail.toLowerCase(), password: args.password }));
 
                       case 19:
-                        _user = _context9.sent;
+                        _user = _context12.sent;
 
                         if (!_user) {
-                          _context9.next = 25;
+                          _context12.next = 25;
                           break;
                         }
 
                         _token = _jsonwebtoken2.default.sign(_lodash2.default.omit(_user, 'password'), jwtSecret);
-                        return _context9.abrupt('return', { token: _token, user: _user });
+                        return _context12.abrupt('return', { token: _token, user: _user });
 
                       case 25:
                         throw new _validationError2.default('Password incorrect');
 
                       case 26:
-                        _context9.next = 29;
+                        _context12.next = 29;
                         break;
 
                       case 28:
@@ -381,22 +444,22 @@ var start = exports.start = function _callee() {
 
                       case 29:
                       case 'end':
-                        return _context9.stop();
+                        return _context12.stop();
                     }
                   }
                 }, null, undefined);
               },
               updateUser: function updateUser(root, args, context, info) {
                 var currentUser, errors, errorList, updateArgs, updatedUser, user, token;
-                return regeneratorRuntime.async(function updateUser$(_context10) {
+                return regeneratorRuntime.async(function updateUser$(_context13) {
                   while (1) {
-                    switch (_context10.prev = _context10.next) {
+                    switch (_context13.prev = _context13.next) {
                       case 0:
                         currentUser = (0, _authenticate2.default)(context.req, context.res, models);
                         errors = (0, _formValidation2.default)(args, true);
 
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context10.next = 6;
+                          _context13.next = 6;
                           break;
                         }
 
@@ -409,43 +472,44 @@ var start = exports.start = function _callee() {
 
                       case 6:
                         updateArgs = _lodash2.default.omit(args, '_id');
-                        _context10.next = 9;
+                        _context13.next = 9;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args._id) }, { $set: updateArgs
                         }, { returnNewDocument: true }));
 
                       case 9:
-                        updatedUser = _context10.sent;
-                        _context10.next = 12;
+                        updatedUser = _context13.sent;
+                        _context13.next = 12;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args._id) }));
 
                       case 12:
-                        user = _context10.sent;
+                        user = _context13.sent;
 
                         if (!user) {
-                          _context10.next = 16;
+                          _context13.next = 16;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context10.abrupt('return', { token: token, user: user });
+                        return _context13.abrupt('return', { token: token, user: user });
 
                       case 16:
                       case 'end':
-                        return _context10.stop();
+                        return _context13.stop();
                     }
                   }
                 }, null, undefined);
               },
-              createItem: function createItem(root, args, context, info) {
-                var errors, errorList, res, item, updatedUser, user, token;
-                return regeneratorRuntime.async(function createItem$(_context11) {
+              changePassword: function changePassword(root, args, context, info) {
+                var currentUser, errors, errorList, updatedUser, user, token;
+                return regeneratorRuntime.async(function changePassword$(_context14) {
                   while (1) {
-                    switch (_context11.prev = _context11.next) {
+                    switch (_context14.prev = _context14.next) {
                       case 0:
-                        errors = (0, _formValidation2.default)(args);
+                        currentUser = (0, _authenticate2.default)(context.req, context.res, models);
+                        errors = (0, _formValidation2.default)(args, true);
 
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context11.next = 7;
+                          _context14.next = 6;
                           break;
                         }
 
@@ -456,22 +520,72 @@ var start = exports.start = function _callee() {
                         });
                         throw new _validationError2.default(errorList);
 
-                      case 7:
-                        // Create item
+                      case 6:
+                        _context14.next = 8;
+                        return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args._id), password: args.currentPassword }, { $set: { password: args.password }
+                        }, { returnNewDocument: true }));
+
+                      case 8:
+                        updatedUser = _context14.sent;
+                        _context14.next = 11;
+                        return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args._id), password: args.password }));
+
+                      case 11:
+                        user = _context14.sent;
+
+                        if (!user) {
+                          _context14.next = 17;
+                          break;
+                        }
+
+                        token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
+                        return _context14.abrupt('return', { token: token, user: user });
+
+                      case 17:
+                        throw new _validationError2.default("Password incorrect");
+
+                      case 18:
+                      case 'end':
+                        return _context14.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+              createItem: function createItem(root, args, context, info) {
+                var errors, errorList, res, item, updatedUser, user, token;
+                return regeneratorRuntime.async(function createItem$(_context15) {
+                  while (1) {
+                    switch (_context15.prev = _context15.next) {
+                      case 0:
                         console.log(args);
-                        _context11.next = 10;
+                        errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'views'));
+
+                        if ((0, _isEmpty2.default)(errors)) {
+                          _context15.next = 8;
+                          break;
+                        }
+
+                        errorList = [];
+
+                        Object.keys(errors).map(function (key) {
+                          errorList.push(errors[key]);
+                        });
+                        throw new _validationError2.default(errorList);
+
+                      case 8:
+                        _context15.next = 10;
                         return regeneratorRuntime.awrap(Items.insert((0, _fix2.default)(args)));
 
                       case 10:
-                        res = _context11.sent;
-                        _context11.t0 = prepare;
-                        _context11.next = 14;
+                        res = _context15.sent;
+                        _context15.t0 = prepare;
+                        _context15.next = 14;
                         return regeneratorRuntime.awrap(Items.findOne({ _id: res.insertedIds[0] }));
 
                       case 14:
-                        _context11.t1 = _context11.sent;
-                        item = (0, _context11.t0)(_context11.t1);
-                        _context11.next = 18;
+                        _context15.t1 = _context15.sent;
+                        item = (0, _context15.t0)(_context15.t1);
+                        _context15.next = 18;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userId) }, { $set: {
                             lastLocation: args.location,
                             lastLatitude: args.latitude,
@@ -483,51 +597,58 @@ var start = exports.start = function _callee() {
                         }, { returnNewDocument: true }));
 
                       case 18:
-                        updatedUser = _context11.sent;
-                        _context11.next = 21;
+                        updatedUser = _context15.sent;
+                        _context15.next = 21;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args.userId) }));
 
                       case 21:
-                        user = _context11.sent;
+                        user = _context15.sent;
 
                         if (!(item && user)) {
-                          _context11.next = 25;
+                          _context15.next = 25;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context11.abrupt('return', { token: token, item: item });
+                        return _context15.abrupt('return', { token: token, item: item });
 
                       case 25:
                       case 'end':
-                        return _context11.stop();
+                        return _context15.stop();
                     }
                   }
                 }, null, undefined);
               },
 
-              deleteUser: function deleteUser(root, args, context, info) {
-                var res;
-                return regeneratorRuntime.async(function deleteUser$(_context12) {
+              createView: function createView(root, args, context, info) {
+                var res, updateItem;
+                return regeneratorRuntime.async(function createView$(_context16) {
                   while (1) {
-                    switch (_context12.prev = _context12.next) {
+                    switch (_context16.prev = _context16.next) {
                       case 0:
-                        _context12.next = 2;
-                        return regeneratorRuntime.awrap(Users.findOneAndDelete(args));
+                        console.log(args);
+                        _context16.next = 3;
+                        return regeneratorRuntime.awrap(Views.insert(args));
 
-                      case 2:
-                        res = _context12.sent;
-                        _context12.t0 = prepare;
-                        _context12.next = 6;
-                        return regeneratorRuntime.awrap(res.value);
+                      case 3:
+                        res = _context16.sent;
+                        _context16.next = 6;
+                        return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
+                          $push: {
+                            views: res.insertedIds[0]
+                          },
+                          $inc: {
+                            viewCount: 1
+                          }
+                        }));
 
                       case 6:
-                        _context12.t1 = _context12.sent;
-                        return _context12.abrupt('return', (0, _context12.t0)(_context12.t1));
+                        updateItem = _context16.sent;
+                        return _context16.abrupt('return', true);
 
                       case 8:
                       case 'end':
-                        return _context12.stop();
+                        return _context16.stop();
                     }
                   }
                 }, null, undefined);
@@ -554,18 +675,22 @@ var start = exports.start = function _callee() {
 
           // Check if token has been modified
           app.use(function (req, res, next) {
-            var token = req.headers.authorization.split(' ')[1];
-            if (token != "null") {
-              // null or undefined
-              try {
-                var decoded = _jsonwebtoken2.default.verify(token, jwtSecret);
-                res.locals.user = decoded;
+            if (req.headers.authorization) {
+              var token = req.headers.authorization.split(' ')[1];
+              if (token != "null") {
+                // null or undefined
+                try {
+                  var decoded = _jsonwebtoken2.default.verify(token, jwtSecret);
+                  res.locals.user = decoded;
+                  next();
+                } catch (err) {
+                  res.sendStatus(401);
+                }
+              } else {
                 next();
-              } catch (err) {
-                res.sendStatus(401);
               }
             } else {
-              next();
+              res.sendStatus(401);
             }
           });
 
@@ -585,11 +710,6 @@ var start = exports.start = function _callee() {
             next();
           });
 
-          /*app.use('/graphql', bodyParser.json(), graphqlExpress({
-            schema: schema,
-            context: 'asd'
-          }))*/
-
           app.use('/graphql', (0, _cors2.default)(), _bodyParser2.default.json(), (0, _graphqlServerExpress.graphqlExpress)(function (req, res) {
             return {
               schema: schema,
@@ -608,19 +728,19 @@ var start = exports.start = function _callee() {
             console.log('Visit ' + URL + ':' + PORT);
           });
 
-          _context13.next = 21;
+          _context17.next = 22;
           break;
 
-        case 18:
-          _context13.prev = 18;
-          _context13.t0 = _context13['catch'](0);
+        case 19:
+          _context17.prev = 19;
+          _context17.t0 = _context17['catch'](0);
 
-          console.log(_context13.t0);
+          console.log(_context17.t0);
 
-        case 21:
+        case 22:
         case 'end':
-          return _context13.stop();
+          return _context17.stop();
       }
     }
-  }, null, undefined, [[0, 18]]);
+  }, null, undefined, [[0, 19]]);
 };
