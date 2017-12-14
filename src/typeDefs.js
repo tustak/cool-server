@@ -5,6 +5,13 @@ const typeDefs = [`
       users: [User]
       itemById(_id: String): Item
       items: [Item]
+      lastOffers(_id: String): [Item]
+      lastRequests(_id: String): [Item]
+      reviewsByFrom(from: String!): Float
+      reviewsByTo(to: String!): Float
+      reviewsByItem(item: String!): Float
+      activityByUserIdItem(_id: String!, type: String!): [Activity]
+      activityByUserIdMessage(_id: String!, type: String!): [Activity]
     }
 
     type SigninPayload {
@@ -55,6 +62,39 @@ const typeDefs = [`
       lastLocation: String
       lastLatitude: Float
       lastLongitude: Float
+      rating: Int
+      activity: [Activity!]
+    }
+
+    type Activity {
+      _id: String
+      type: String!
+      user: User!
+      activityId: String!
+      date: String!
+      viewed: Boolean!
+      item: Item
+      review: Review
+      message: Message
+    }
+
+    type Conversation {
+      _id: String
+      item: Item!
+      userFrom: User!
+      userTo: User!
+      messages: [Message!]
+    }
+
+    type Message {
+      _id: String
+      conversation: Conversation!
+      item: Item!
+      userFrom: User!
+      userTo: User!
+      message: String!
+      date: String!
+      read: Boolean!
     }
 
     type Item {
@@ -70,6 +110,7 @@ const typeDefs = [`
       user: User
       views: [View]!
       viewCount: Int!
+      type: String!
     }
 
     type View {
@@ -79,14 +120,28 @@ const typeDefs = [`
       date: String!
     }
 
+    type Review {
+      _id: String
+      from: User
+      to: User
+      date: String
+      item: Item
+      rate: Int
+      comment: String
+    }
+
     type Mutation {
-      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean): SigninPayload
+      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean, activity: [String!]): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
       changePassword(_id: String!, currentPassword: String!, password: String!, repeatPassword: String!): SigninPayload
-      createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, active: Boolean!, views: [String]!, viewCount: Int!): ItemToken
+      createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, active: Boolean!, views: [String]!, viewCount: Int!, type: String!): ItemToken
       createView(user: String!, item: String!, date: String!): Boolean
-  }
+      createReview(from: String!, to: String!, date: String!, item: String!, rate: Int!, comment: String!): Boolean
+      createActivity(type: String!, user: String!, activityId: String!, date: String!, viewed: Boolean!, item: String, review: String, message: String): Boolean
+      createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!]): String
+      createMessage(conversation:String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): String
+    }
 
     schema {
       query: Query

@@ -13,11 +13,11 @@ import isEmpty from 'lodash/isEmpty'
 import getModels from './models'
 import typeDefs from './typeDefs.js'
 import validateInput from './utils/formValidation'
+import distance from './utils/distance'
 import validationError from './errors/validationError'
 import authenticate from './middlewares/authenticate'
 import fix from './utils/fix'
 //---------
-
 
 // COnfig
 const jwtSecret = process.env.jwtSecret || require('../config').default.jwtSecret
@@ -41,6 +41,10 @@ export const start = async () => {
     const Users = models.Users//db.collection('users')
     const Items = models.Items//db.collection('items')
     const Views = models.Views
+    const Reviews = models.Reviews
+    const Activities = models.Activities
+    const Messages = models.Messages
+    const Conversations = models.Conversations
 
     const resolvers = {
       Query: {
@@ -55,6 +59,33 @@ export const start = async () => {
         },
         items: async () => {
           return (await Items.find({}).toArray()).map(prepare)
+        },
+        lastOffers: async(root, {_id}) => {
+          return (await Items.find({type: "offer", userId: {$ne: _id}}).limit(10).toArray()).map(prepare)
+        },
+        lastRequests: async(root, {_id}) => {
+          return (await Items.find({type: "request", userId: {$ne: _id}}).limit(10).toArray()).map(prepare)
+        },
+        reviewsByFrom: async(root, {userId}) => {
+          const reviews = await Reviews.find({from: ObjectId(userId)})
+          console.log(reviews)
+          return 3.5
+        },
+        reviewsByTo: async(root, {userId}) => {
+          const reviews = await Reviews.find({to: ObjectId(userId)})
+          console.log(reviews)
+          return 3.5
+        },
+        reviewsByItem: async(root, {itemId}) => {
+          const reviews = await Reviews.findOne({tem: ObjectId(userId)})
+          console.log(reviews)
+          return 3.5
+        },
+        activityByUserIdItem: async(root, {_id, type}) => {
+          return (await Activities.find({user: _id, type: type}).sort({date: -1}).toArray()).map(prepare)
+        },
+        activityByUserIdMessage: async(root, {_id, type}) => {
+          return (await Activities.find({user: _id, type: type}).sort({date: -1}).toArray()).map(prepare)
         },
       },
       User: {
@@ -71,6 +102,13 @@ export const start = async () => {
               {_id: {$in: user.requested}}
             ).toArray()
           )
+        },
+        activity: async (user) => {
+          return (
+            await Activities.find(
+              {_id: {$in: user.activity}}
+            ).toArray()
+          )
         }
       },
       Item: {
@@ -85,6 +123,52 @@ export const start = async () => {
           )
         }
       },
+      Activity: {
+        user: async({user}) => {
+          return prepare(await Users.findOne(ObjectId(user)))
+        },
+        item: async ({item}) => {
+          return prepare(await Items.findOne(ObjectId(item)))
+        },
+        review: async ({review}) => {
+          return prepare(await Reviews.findOne(ObjectId(review)))
+        },
+        message: async ({message}) => {
+          return prepare(await Messages.findOne(ObjectId(message)))
+        },
+      },
+      Conversation: {
+        item: async ({item}) => {
+          return prepare(await Items.findOne(ObjectId(item)))
+        },
+        userFrom: async({userFrom}) => {
+          return prepare(await Users.findOne(ObjectId(userFrom)))
+        },
+        userTo: async({userTo}) => {
+          return prepare(await Users.findOne(ObjectId(userTo)))
+        },
+        messages: async (conversation) => {
+          return (
+            await Messages.find(
+              {_id: {$in: conversation.messages}}
+            ).toArray()
+          )
+        }
+      },
+      Message: {
+        conversation: async ({conversation}) => {
+          return prepare(await Conversations.findOne(ObjectId(conversation)))
+        },
+        item: async ({item}) => {
+          return prepare(await Items.findOne(ObjectId(item)))
+        },
+        userFrom: async({userFrom}) => {
+          return prepare(await Users.findOne(ObjectId(userFrom)))
+        },
+        userTo: async({userTo}) => {
+          return prepare(await Users.findOne(ObjectId(userTo)))
+        },
+      },
       View: {
         user: async ({userId}) => {
           return prepare(await Users.findOne(ObjectId(userId)))
@@ -93,9 +177,20 @@ export const start = async () => {
           return prepare(await Items.findOne(ObjectId(itemId)))
         }
       },
+      Review: {
+        from: async ({userId}) => {
+          return prepare(await Users.findOne(ObjectId(userId)))
+        },
+        to: async ({userId}) => {
+          return prepare(await Users.findOne(ObjectId(userId)))
+        },
+        item: async ({itemId}) => {
+          return prepare(await Items.findOne(ObjectId(itemId)))
+        },
+      },
       Mutation: {
         createUser: async (root, args, context, info) => {
-          let errors = validateInput(_.omit(args, 'offered', 'requested'))
+          let errors = validateInput(_.omit(args, 'offered', 'requested', 'activity'))
           if (await Users.findOne({username: args.username.toLowerCase()})) {
             errors['username'] = `User ${args.username.toLowerCase()} already exists`
           }
@@ -211,7 +306,6 @@ export const start = async () => {
           }
         },
         createItem: async (root, args, context, info) => {
-          console.log(args)
           let errors = validateInput(_.omit(args, 'views'))
 
           if (!isEmpty(errors)) {
@@ -256,6 +350,45 @@ export const start = async () => {
           }
         },
 
+        createActivity: async(root, args, context, info) => {
+          // Create new object every time something happens
+          const res = await Activities.insert(args)
+          const activity = prepare(await Activities.findOne({_id: res.insertedIds[0]}))
+          const updateUser = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userId)},
+            {$set:
+              {
+                $push:
+                  {
+                    activity: res.insertedIds[0]
+                  }
+              }
+            }
+          )
+          return true
+        },
+
+        createConversation: async(root, args, context, info) => {
+          const res = await Conversations.insert(args)
+          return res.insertedIds[0]
+        },
+
+        createMessage: async(root, args, context, info) => {
+          const res = await Messages.insert(args)
+          //const message = prepare(await Messages.findOne({_id: res.insertedIds[0]}))
+
+          const updateConversation = await Conversations.findOneAndUpdate(
+            {_id: ObjectId(args.conversation)},
+            {
+              $push:
+                {
+                  messages: res.insertedIds[0] 
+                }
+            }
+          )
+          return res.insertedIds[0]
+        },
+
         createView: async (root, args, context, info) => {
           // Get item if for checking if it's from the same user
           const thisItem = await Items.findOne({_id: ObjectId(args.item)})
@@ -295,6 +428,20 @@ export const start = async () => {
           //  return false
          // }
         },
+
+        createReview: async(root, args, context, info) => {
+          // Check if rating exists for this item
+          const reviewForThisItem = await Reviews.findOne({item: ObjectId(args.item)})
+
+          // If doesnt exists...
+          if (!reviewForThisItem) {
+            const thisReview = await Reviews.insert(args)
+            return true
+          }
+
+          return false
+
+        },
       },
     }
 
@@ -304,7 +451,7 @@ export const start = async () => {
     })
 
     const app = express()
-
+    /* SACAR ESTO
     //app.use(cors())
     app.use(function(req, res, next) {
       res.header("Access-Control-Allow-Origin", "*");
@@ -315,7 +462,7 @@ export const start = async () => {
         next();
       }
     });
-
+    
     // Check if token has been modified
     app.use(function(req, res, next) {
       if (req.headers.authorization) {
@@ -337,6 +484,7 @@ export const start = async () => {
         res.sendStatus(401)
       }
     });
+    */
 
     process.on('unhandledRejection', (reason, p) => {
       console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
