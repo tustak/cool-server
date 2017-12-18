@@ -439,12 +439,15 @@ export const start = async () => {
         },
 
         viewMessage: async(root, args, context, info) => {
-          const res = await Messages.update({
-            conversation: args.conversationId.toString()}, 
-            {$set: {read: true}},
-            {multi: true}
-          )
-          return true
+          if (args.userFrom !== args.userId) {
+            const res = await Messages.update({
+              conversation: args.conversationId.toString()}, 
+              {$set: {read: true}},
+              {multi: true}
+            )
+            return true
+          }
+          return false
         },
 
         createView: async (root, args, context, info) => {

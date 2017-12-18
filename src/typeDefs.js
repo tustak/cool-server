@@ -146,7 +146,7 @@ const typeDefs = [`
       createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!], lastDate: String!): String
       createMessage(conversation: String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): String
       viewActivity(activityId: [String!]): Boolean
-      viewMessage(conversationId: String!): Boolean
+      viewMessage(conversationId: String!, userId: String!, userFrom: String!): Boolean
     }
 
     schema {
