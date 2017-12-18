@@ -12,6 +12,8 @@ const typeDefs = [`
       reviewsByItem(item: String!): Float
       activityByUserIdItem(_id: String!, type: String!): [Activity]
       activityByUserIdMessage(_id: String!, type: String!): [Activity]
+      conversationsByUserId(_id: String!): User
+      messagesByConversationId(_id: String!): [Message!]
     }
 
     type SigninPayload {
@@ -64,6 +66,7 @@ const typeDefs = [`
       lastLongitude: Float
       rating: Int
       activity: [Activity!]
+      conversations: [Conversation!]
     }
 
     type Activity {
@@ -84,6 +87,7 @@ const typeDefs = [`
       userFrom: User!
       userTo: User!
       messages: [Message!]
+      lastDate: String!
     }
 
     type Message {
@@ -131,7 +135,7 @@ const typeDefs = [`
     }
 
     type Mutation {
-      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean, activity: [String!]): SigninPayload
+      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean, activity: [String!], conversations: [String!]): SigninPayload
       signinUser(usernameOrEmail: String!, password: String!): SigninPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
       changePassword(_id: String!, currentPassword: String!, password: String!, repeatPassword: String!): SigninPayload
@@ -139,8 +143,10 @@ const typeDefs = [`
       createView(user: String!, item: String!, date: String!): Boolean
       createReview(from: String!, to: String!, date: String!, item: String!, rate: Int!, comment: String!): Boolean
       createActivity(type: String!, user: String!, activityId: String!, date: String!, viewed: Boolean!, item: String, review: String, message: String): Boolean
-      createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!]): String
-      createMessage(conversation:String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): String
+      createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!], lastDate: String!): String
+      createMessage(conversation: String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): String
+      viewActivity(activityId: [String!]): Boolean
+      viewMessage(conversationId: String!): Boolean
     }
 
     schema {

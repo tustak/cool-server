@@ -85,7 +85,17 @@ export const start = async () => {
           return (await Activities.find({user: _id, type: type}).sort({date: -1}).toArray()).map(prepare)
         },
         activityByUserIdMessage: async(root, {_id, type}) => {
-          return (await Activities.find({user: _id, type: type}).sort({date: -1}).toArray()).map(prepare)
+          const messageList = []
+          const messages = (await Messages.find({userTo: _id}).toArray()).map(prepare).map(message => {messageList.push(message._id)})
+          return (await Activities.find({message: {$in: messageList}, type: type}).sort({date: -1}).toArray()).map(prepare)
+        },
+        conversationsByUserId: async(root, {_id}) => {
+          return prepare(await Users.findOne(ObjectId(_id)))
+        },
+        messagesByConversationId: async(root, {_id}) => {
+          const messageList = []
+          const messages = (await Messages.find({conversation: _id}).toArray()).map(prepare).map(message => {messageList.push(message._id)})
+          return (await Messages.find({_id: {$in: messageList}}).sort({date: -1}).toArray()).map(prepare)
         },
       },
       User: {
@@ -107,6 +117,13 @@ export const start = async () => {
           return (
             await Activities.find(
               {_id: {$in: user.activity}}
+            ).toArray()
+          )
+        },
+        conversations: async (user) => {
+          return (
+            await Conversations.find(
+              {_id: {$in: user.conversations}}
             ).toArray()
           )
         }
@@ -190,7 +207,7 @@ export const start = async () => {
       },
       Mutation: {
         createUser: async (root, args, context, info) => {
-          let errors = validateInput(_.omit(args, 'offered', 'requested', 'activity'))
+          let errors = validateInput(_.omit(args, 'offered', 'requested', 'activity', 'conversations'))
           if (await Users.findOne({username: args.username.toLowerCase()})) {
             errors['username'] = `User ${args.username.toLowerCase()} already exists`
           }
@@ -370,6 +387,24 @@ export const start = async () => {
 
         createConversation: async(root, args, context, info) => {
           const res = await Conversations.insert(args)
+          const updateUserFrom = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userFrom)},
+            {
+              $push:
+                {
+                  conversations: res.insertedIds[0]
+                }
+            }
+          )
+          const updateUserTo = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userTo)},
+            {
+              $push:
+                {
+                  conversations: res.insertedIds[0]
+                }
+            }
+          )
           return res.insertedIds[0]
         },
 
@@ -379,14 +414,37 @@ export const start = async () => {
 
           const updateConversation = await Conversations.findOneAndUpdate(
             {_id: ObjectId(args.conversation)},
-            {
+            { 
+              $set: {
+                lastDate: new Date().toISOString(),
+              },
               $push:
-                {
-                  messages: res.insertedIds[0] 
-                }
+              {
+                messages: res.insertedIds[0] 
+              }
             }
           )
           return res.insertedIds[0]
+        },
+
+        viewActivity: async(root, args, context, info) => {
+          const activityList = []
+          args.activityId.map(act => {activityList.push(ObjectId(act))})
+          const res = await Activities.update({
+            _id: {$in: activityList}}, 
+            {$set: {viewed: true}},
+            {multi: true}
+          )
+          return true
+        },
+
+        viewMessage: async(root, args, context, info) => {
+          const res = await Messages.update({
+            conversation: args.conversationId.toString()}, 
+            {$set: {read: true}},
+            {multi: true}
+          )
+          return true
         },
 
         createView: async (root, args, context, info) => {
