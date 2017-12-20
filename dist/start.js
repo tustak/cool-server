@@ -1494,9 +1494,10 @@ var start = exports.start = function _callee() {
             resolvers: resolvers
           });
           app = (0, _express2.default)();
-          /* SACAR ESTO
+
           //app.use(cors())
-          app.use(function(req, res, next) {
+
+          app.use(function (req, res, next) {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization");
             if (req.method === 'OPTIONS') {
@@ -1505,29 +1506,27 @@ var start = exports.start = function _callee() {
               next();
             }
           });
-          
+
           // Check if token has been modified
-          app.use(function(req, res, next) {
+          app.use(function (req, res, next) {
             if (req.headers.authorization) {
-              const token = req.headers.authorization.split(' ')[1]
-              if(token != "null") { // null or undefined
+              var token = req.headers.authorization.split(' ')[1];
+              if (token != "null") {
+                // null or undefined
                 try {
-                  const decoded = jwt.verify(token, jwtSecret)
-                  res.locals.user = decoded
-                  next()
-                } catch(err) {
-                  res.sendStatus(401)
-                }  
+                  var decoded = _jsonwebtoken2.default.verify(token, jwtSecret);
+                  res.locals.user = decoded;
+                  next();
+                } catch (err) {
+                  res.sendStatus(401);
+                }
+              } else {
+                next();
               }
-              else {
-                next()
-              }
-            }
-            else {
-              res.sendStatus(401)
+            } else {
+              res.sendStatus(401);
             }
           });
-          */
 
           process.on('unhandledRejection', function (reason, p) {
             console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
@@ -1563,19 +1562,19 @@ var start = exports.start = function _callee() {
             console.log('Visit ' + URL + ':' + PORT);
           });
 
-          _context49.next = 24;
+          _context49.next = 26;
           break;
 
-        case 21:
-          _context49.prev = 21;
+        case 23:
+          _context49.prev = 23;
           _context49.t0 = _context49['catch'](0);
 
           console.log(_context49.t0);
 
-        case 24:
+        case 26:
         case 'end':
           return _context49.stop();
       }
     }
-  }, null, undefined, [[0, 21]]);
+  }, null, undefined, [[0, 23]]);
 };

@@ -532,7 +532,7 @@ export const start = async () => {
     })
 
     const app = express()
-    /* SACAR ESTO
+
     //app.use(cors())
     app.use(function(req, res, next) {
       res.header("Access-Control-Allow-Origin", "*");
@@ -565,7 +565,6 @@ export const start = async () => {
         res.sendStatus(401)
       }
     });
-    */
 
     process.on('unhandledRejection', (reason, p) => {
       console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
