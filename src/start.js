@@ -341,21 +341,41 @@ export const start = async () => {
             const item = prepare(await Items.findOne({_id: res.insertedIds[0]}))
 
             // Update user last location
-            const updatedUser = await Users.findOneAndUpdate(
-              {_id: ObjectId(args.userId)},
-              {$set:
-                {
-                  lastLocation: args.location,
-                  lastLatitude: args.latitude,
-                  lastLongitude: args.longitude,
+            if (args.type === 'offer') {
+              const updatedUser = await Users.findOneAndUpdate(
+                {_id: ObjectId(args.userId)},
+                {$set:
+                  {
+                    lastLocation: args.location,
+                    lastLatitude: args.latitude,
+                    lastLongitude: args.longitude,
+                  },
+                 $push: 
+                  {
+                    offered: res.insertedIds[0]
+                  }
                 },
-               $push: 
-                {
-                  offered: res.insertedIds[0]
-                }
-              },
-              {returnNewDocument: true}
-            )
+                {returnNewDocument: true}
+              )  
+            }
+            else {
+              const updatedUser = await Users.findOneAndUpdate(
+              {_id: ObjectId(args.userId)},
+                {$set:
+                  {
+                    lastLocation: args.location,
+                    lastLatitude: args.latitude,
+                    lastLongitude: args.longitude,
+                  },
+                 $push: 
+                  {
+                    requested: res.insertedIds[0]
+                  }
+                },
+                {returnNewDocument: true}
+              )
+            }
+            
             
             const user = await Users.findOne({_id: ObjectId(args.userId)})
             if (item && user) {

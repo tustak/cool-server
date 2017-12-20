@@ -86,16 +86,16 @@ var prepare = function prepare(o) {
 
 var start = exports.start = function _callee() {
   var models, Users, Items, Views, Reviews, Activities, Messages, Conversations, resolvers, schema, app;
-  return regeneratorRuntime.async(function _callee$(_context44) {
+  return regeneratorRuntime.async(function _callee$(_context49) {
     while (1) {
-      switch (_context44.prev = _context44.next) {
+      switch (_context49.prev = _context49.next) {
         case 0:
-          _context44.prev = 0;
-          _context44.next = 3;
+          _context49.prev = 0;
+          _context49.next = 3;
           return regeneratorRuntime.awrap((0, _models2.default)());
 
         case 3:
-          models = _context44.sent;
+          models = _context49.sent;
           Users = models.Users; //db.collection('users')
 
           Items = models.Items; //db.collection('items')
@@ -320,20 +320,87 @@ var start = exports.start = function _callee() {
               activityByUserIdMessage: function activityByUserIdMessage(root, _ref9) {
                 var _id = _ref9._id,
                     type = _ref9.type;
+                var messageList, messages;
                 return regeneratorRuntime.async(function activityByUserIdMessage$(_context11) {
                   while (1) {
                     switch (_context11.prev = _context11.next) {
                       case 0:
-                        _context11.next = 2;
-                        return regeneratorRuntime.awrap(Activities.find({ user: _id, type: type }).sort({ date: -1 }).toArray());
+                        messageList = [];
+                        _context11.next = 3;
+                        return regeneratorRuntime.awrap(Messages.find({ userTo: _id }).toArray());
 
-                      case 2:
+                      case 3:
                         _context11.t0 = prepare;
-                        return _context11.abrupt('return', _context11.sent.map(_context11.t0));
 
-                      case 4:
+                        _context11.t1 = function (message) {
+                          messageList.push(message._id);
+                        };
+
+                        messages = _context11.sent.map(_context11.t0).map(_context11.t1);
+                        _context11.next = 8;
+                        return regeneratorRuntime.awrap(Activities.find({ message: { $in: messageList }, type: type }).sort({ date: -1 }).toArray());
+
+                      case 8:
+                        _context11.t2 = prepare;
+                        return _context11.abrupt('return', _context11.sent.map(_context11.t2));
+
+                      case 10:
                       case 'end':
                         return _context11.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+              conversationsByUserId: function conversationsByUserId(root, _ref10) {
+                var _id = _ref10._id;
+                return regeneratorRuntime.async(function conversationsByUserId$(_context12) {
+                  while (1) {
+                    switch (_context12.prev = _context12.next) {
+                      case 0:
+                        _context12.t0 = prepare;
+                        _context12.next = 3;
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_id)));
+
+                      case 3:
+                        _context12.t1 = _context12.sent;
+                        return _context12.abrupt('return', (0, _context12.t0)(_context12.t1));
+
+                      case 5:
+                      case 'end':
+                        return _context12.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+              messagesByConversationId: function messagesByConversationId(root, _ref11) {
+                var _id = _ref11._id;
+                var messageList, messages;
+                return regeneratorRuntime.async(function messagesByConversationId$(_context13) {
+                  while (1) {
+                    switch (_context13.prev = _context13.next) {
+                      case 0:
+                        messageList = [];
+                        _context13.next = 3;
+                        return regeneratorRuntime.awrap(Messages.find({ conversation: _id }).toArray());
+
+                      case 3:
+                        _context13.t0 = prepare;
+
+                        _context13.t1 = function (message) {
+                          messageList.push(message._id);
+                        };
+
+                        messages = _context13.sent.map(_context13.t0).map(_context13.t1);
+                        _context13.next = 8;
+                        return regeneratorRuntime.awrap(Messages.find({ _id: { $in: messageList } }).sort({ date: -1 }).toArray());
+
+                      case 8:
+                        _context13.t2 = prepare;
+                        return _context13.abrupt('return', _context13.sent.map(_context13.t2));
+
+                      case 10:
+                      case 'end':
+                        return _context13.stop();
                     }
                   }
                 }, null, undefined);
@@ -341,48 +408,12 @@ var start = exports.start = function _callee() {
             },
             User: {
               offered: function offered(user) {
-                return regeneratorRuntime.async(function offered$(_context12) {
-                  while (1) {
-                    switch (_context12.prev = _context12.next) {
-                      case 0:
-                        _context12.next = 2;
-                        return regeneratorRuntime.awrap(Items.find({ _id: { $in: user.offered } }).toArray());
-
-                      case 2:
-                        return _context12.abrupt('return', _context12.sent);
-
-                      case 3:
-                      case 'end':
-                        return _context12.stop();
-                    }
-                  }
-                }, null, undefined);
-              },
-              requested: function requested(user) {
-                return regeneratorRuntime.async(function requested$(_context13) {
-                  while (1) {
-                    switch (_context13.prev = _context13.next) {
-                      case 0:
-                        _context13.next = 2;
-                        return regeneratorRuntime.awrap(Items.find({ _id: { $in: user.requested } }).toArray());
-
-                      case 2:
-                        return _context13.abrupt('return', _context13.sent);
-
-                      case 3:
-                      case 'end':
-                        return _context13.stop();
-                    }
-                  }
-                }, null, undefined);
-              },
-              activity: function activity(user) {
-                return regeneratorRuntime.async(function activity$(_context14) {
+                return regeneratorRuntime.async(function offered$(_context14) {
                   while (1) {
                     switch (_context14.prev = _context14.next) {
                       case 0:
                         _context14.next = 2;
-                        return regeneratorRuntime.awrap(Activities.find({ _id: { $in: user.activity } }).toArray());
+                        return regeneratorRuntime.awrap(Items.find({ _id: { $in: user.offered } }).toArray());
 
                       case 2:
                         return _context14.abrupt('return', _context14.sent);
@@ -393,37 +424,32 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              }
-            },
-            Item: {
-              user: function user(_ref10) {
-                var userId = _ref10.userId;
-                return regeneratorRuntime.async(function user$(_context15) {
+              },
+              requested: function requested(user) {
+                return regeneratorRuntime.async(function requested$(_context15) {
                   while (1) {
                     switch (_context15.prev = _context15.next) {
                       case 0:
-                        _context15.t0 = prepare;
-                        _context15.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
+                        _context15.next = 2;
+                        return regeneratorRuntime.awrap(Items.find({ _id: { $in: user.requested } }).toArray());
+
+                      case 2:
+                        return _context15.abrupt('return', _context15.sent);
 
                       case 3:
-                        _context15.t1 = _context15.sent;
-                        return _context15.abrupt('return', (0, _context15.t0)(_context15.t1));
-
-                      case 5:
                       case 'end':
                         return _context15.stop();
                     }
                   }
                 }, null, undefined);
               },
-              views: function views(item) {
-                return regeneratorRuntime.async(function views$(_context16) {
+              activity: function activity(user) {
+                return regeneratorRuntime.async(function activity$(_context16) {
                   while (1) {
                     switch (_context16.prev = _context16.next) {
                       case 0:
                         _context16.next = 2;
-                        return regeneratorRuntime.awrap(Views.find({ _id: { $in: item.views } }).toArray());
+                        return regeneratorRuntime.awrap(Activities.find({ _id: { $in: user.activity } }).toArray());
 
                       case 2:
                         return _context16.abrupt('return', _context16.sent);
@@ -434,39 +460,36 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              }
-            },
-            Activity: {
-              user: function user(_ref11) {
-                var _user = _ref11.user;
-                return regeneratorRuntime.async(function user$(_context17) {
+              },
+              conversations: function conversations(user) {
+                return regeneratorRuntime.async(function conversations$(_context17) {
                   while (1) {
                     switch (_context17.prev = _context17.next) {
                       case 0:
-                        _context17.t0 = prepare;
-                        _context17.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_user)));
+                        _context17.next = 2;
+                        return regeneratorRuntime.awrap(Conversations.find({ _id: { $in: user.conversations } }).toArray());
+
+                      case 2:
+                        return _context17.abrupt('return', _context17.sent);
 
                       case 3:
-                        _context17.t1 = _context17.sent;
-                        return _context17.abrupt('return', (0, _context17.t0)(_context17.t1));
-
-                      case 5:
                       case 'end':
                         return _context17.stop();
                     }
                   }
                 }, null, undefined);
-              },
-              item: function item(_ref12) {
-                var _item = _ref12.item;
-                return regeneratorRuntime.async(function item$(_context18) {
+              }
+            },
+            Item: {
+              user: function user(_ref12) {
+                var userId = _ref12.userId;
+                return regeneratorRuntime.async(function user$(_context18) {
                   while (1) {
                     switch (_context18.prev = _context18.next) {
                       case 0:
                         _context18.t0 = prepare;
                         _context18.next = 3;
-                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(_item)));
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
 
                       case 3:
                         _context18.t1 = _context18.sent;
@@ -479,36 +502,35 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              review: function review(_ref13) {
-                var _review = _ref13.review;
-                return regeneratorRuntime.async(function review$(_context19) {
+              views: function views(item) {
+                return regeneratorRuntime.async(function views$(_context19) {
                   while (1) {
                     switch (_context19.prev = _context19.next) {
                       case 0:
-                        _context19.t0 = prepare;
-                        _context19.next = 3;
-                        return regeneratorRuntime.awrap(Reviews.findOne((0, _mongodb.ObjectId)(_review)));
+                        _context19.next = 2;
+                        return regeneratorRuntime.awrap(Views.find({ _id: { $in: item.views } }).toArray());
+
+                      case 2:
+                        return _context19.abrupt('return', _context19.sent);
 
                       case 3:
-                        _context19.t1 = _context19.sent;
-                        return _context19.abrupt('return', (0, _context19.t0)(_context19.t1));
-
-                      case 5:
                       case 'end':
                         return _context19.stop();
                     }
                   }
                 }, null, undefined);
-              },
-              message: function message(_ref14) {
-                var _message = _ref14.message;
-                return regeneratorRuntime.async(function message$(_context20) {
+              }
+            },
+            Activity: {
+              user: function user(_ref13) {
+                var _user = _ref13.user;
+                return regeneratorRuntime.async(function user$(_context20) {
                   while (1) {
                     switch (_context20.prev = _context20.next) {
                       case 0:
                         _context20.t0 = prepare;
                         _context20.next = 3;
-                        return regeneratorRuntime.awrap(Messages.findOne((0, _mongodb.ObjectId)(_message)));
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_user)));
 
                       case 3:
                         _context20.t1 = _context20.sent;
@@ -520,18 +542,16 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              }
-            },
-            Conversation: {
-              item: function item(_ref15) {
-                var _item2 = _ref15.item;
+              },
+              item: function item(_ref14) {
+                var _item = _ref14.item;
                 return regeneratorRuntime.async(function item$(_context21) {
                   while (1) {
                     switch (_context21.prev = _context21.next) {
                       case 0:
                         _context21.t0 = prepare;
                         _context21.next = 3;
-                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(_item2)));
+                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(_item)));
 
                       case 3:
                         _context21.t1 = _context21.sent;
@@ -544,15 +564,15 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              userFrom: function userFrom(_ref16) {
-                var _userFrom = _ref16.userFrom;
-                return regeneratorRuntime.async(function userFrom$(_context22) {
+              review: function review(_ref15) {
+                var _review = _ref15.review;
+                return regeneratorRuntime.async(function review$(_context22) {
                   while (1) {
                     switch (_context22.prev = _context22.next) {
                       case 0:
                         _context22.t0 = prepare;
                         _context22.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userFrom)));
+                        return regeneratorRuntime.awrap(Reviews.findOne((0, _mongodb.ObjectId)(_review)));
 
                       case 3:
                         _context22.t1 = _context22.sent;
@@ -565,15 +585,15 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              userTo: function userTo(_ref17) {
-                var _userTo = _ref17.userTo;
-                return regeneratorRuntime.async(function userTo$(_context23) {
+              message: function message(_ref16) {
+                var _message = _ref16.message;
+                return regeneratorRuntime.async(function message$(_context23) {
                   while (1) {
                     switch (_context23.prev = _context23.next) {
                       case 0:
                         _context23.t0 = prepare;
                         _context23.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userTo)));
+                        return regeneratorRuntime.awrap(Messages.findOne((0, _mongodb.ObjectId)(_message)));
 
                       case 3:
                         _context23.t1 = _context23.sent;
@@ -585,36 +605,39 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              },
-              messages: function messages(conversation) {
-                return regeneratorRuntime.async(function messages$(_context24) {
+              }
+            },
+            Conversation: {
+              item: function item(_ref17) {
+                var _item2 = _ref17.item;
+                return regeneratorRuntime.async(function item$(_context24) {
                   while (1) {
                     switch (_context24.prev = _context24.next) {
                       case 0:
-                        _context24.next = 2;
-                        return regeneratorRuntime.awrap(Messages.find({ _id: { $in: conversation.messages } }).toArray());
-
-                      case 2:
-                        return _context24.abrupt('return', _context24.sent);
+                        _context24.t0 = prepare;
+                        _context24.next = 3;
+                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(_item2)));
 
                       case 3:
+                        _context24.t1 = _context24.sent;
+                        return _context24.abrupt('return', (0, _context24.t0)(_context24.t1));
+
+                      case 5:
                       case 'end':
                         return _context24.stop();
                     }
                   }
                 }, null, undefined);
-              }
-            },
-            Message: {
-              conversation: function conversation(_ref18) {
-                var _conversation = _ref18.conversation;
-                return regeneratorRuntime.async(function conversation$(_context25) {
+              },
+              userFrom: function userFrom(_ref18) {
+                var _userFrom = _ref18.userFrom;
+                return regeneratorRuntime.async(function userFrom$(_context25) {
                   while (1) {
                     switch (_context25.prev = _context25.next) {
                       case 0:
                         _context25.t0 = prepare;
                         _context25.next = 3;
-                        return regeneratorRuntime.awrap(Conversations.findOne((0, _mongodb.ObjectId)(_conversation)));
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userFrom)));
 
                       case 3:
                         _context25.t1 = _context25.sent;
@@ -627,15 +650,15 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              item: function item(_ref19) {
-                var _item3 = _ref19.item;
-                return regeneratorRuntime.async(function item$(_context26) {
+              userTo: function userTo(_ref19) {
+                var _userTo = _ref19.userTo;
+                return regeneratorRuntime.async(function userTo$(_context26) {
                   while (1) {
                     switch (_context26.prev = _context26.next) {
                       case 0:
                         _context26.t0 = prepare;
                         _context26.next = 3;
-                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(_item3)));
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userTo)));
 
                       case 3:
                         _context26.t1 = _context26.sent;
@@ -648,36 +671,35 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              userFrom: function userFrom(_ref20) {
-                var _userFrom2 = _ref20.userFrom;
-                return regeneratorRuntime.async(function userFrom$(_context27) {
+              messages: function messages(conversation) {
+                return regeneratorRuntime.async(function messages$(_context27) {
                   while (1) {
                     switch (_context27.prev = _context27.next) {
                       case 0:
-                        _context27.t0 = prepare;
-                        _context27.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userFrom2)));
+                        _context27.next = 2;
+                        return regeneratorRuntime.awrap(Messages.find({ _id: { $in: conversation.messages } }).toArray());
+
+                      case 2:
+                        return _context27.abrupt('return', _context27.sent);
 
                       case 3:
-                        _context27.t1 = _context27.sent;
-                        return _context27.abrupt('return', (0, _context27.t0)(_context27.t1));
-
-                      case 5:
                       case 'end':
                         return _context27.stop();
                     }
                   }
                 }, null, undefined);
-              },
-              userTo: function userTo(_ref21) {
-                var _userTo2 = _ref21.userTo;
-                return regeneratorRuntime.async(function userTo$(_context28) {
+              }
+            },
+            Message: {
+              conversation: function conversation(_ref20) {
+                var _conversation = _ref20.conversation;
+                return regeneratorRuntime.async(function conversation$(_context28) {
                   while (1) {
                     switch (_context28.prev = _context28.next) {
                       case 0:
                         _context28.t0 = prepare;
                         _context28.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userTo2)));
+                        return regeneratorRuntime.awrap(Conversations.findOne((0, _mongodb.ObjectId)(_conversation)));
 
                       case 3:
                         _context28.t1 = _context28.sent;
@@ -689,18 +711,16 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              }
-            },
-            View: {
-              user: function user(_ref22) {
-                var userId = _ref22.userId;
-                return regeneratorRuntime.async(function user$(_context29) {
+              },
+              item: function item(_ref21) {
+                var _item3 = _ref21.item;
+                return regeneratorRuntime.async(function item$(_context29) {
                   while (1) {
                     switch (_context29.prev = _context29.next) {
                       case 0:
                         _context29.t0 = prepare;
                         _context29.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
+                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(_item3)));
 
                       case 3:
                         _context29.t1 = _context29.sent;
@@ -713,15 +733,15 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              item: function item(_ref23) {
-                var itemId = _ref23.itemId;
-                return regeneratorRuntime.async(function item$(_context30) {
+              userFrom: function userFrom(_ref22) {
+                var _userFrom2 = _ref22.userFrom;
+                return regeneratorRuntime.async(function userFrom$(_context30) {
                   while (1) {
                     switch (_context30.prev = _context30.next) {
                       case 0:
                         _context30.t0 = prepare;
                         _context30.next = 3;
-                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(itemId)));
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userFrom2)));
 
                       case 3:
                         _context30.t1 = _context30.sent;
@@ -733,18 +753,16 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              }
-            },
-            Review: {
-              from: function from(_ref24) {
-                var userId = _ref24.userId;
-                return regeneratorRuntime.async(function from$(_context31) {
+              },
+              userTo: function userTo(_ref23) {
+                var _userTo2 = _ref23.userTo;
+                return regeneratorRuntime.async(function userTo$(_context31) {
                   while (1) {
                     switch (_context31.prev = _context31.next) {
                       case 0:
                         _context31.t0 = prepare;
                         _context31.next = 3;
-                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(_userTo2)));
 
                       case 3:
                         _context31.t1 = _context31.sent;
@@ -756,10 +774,12 @@ var start = exports.start = function _callee() {
                     }
                   }
                 }, null, undefined);
-              },
-              to: function to(_ref25) {
-                var userId = _ref25.userId;
-                return regeneratorRuntime.async(function to$(_context32) {
+              }
+            },
+            View: {
+              user: function user(_ref24) {
+                var userId = _ref24.userId;
+                return regeneratorRuntime.async(function user$(_context32) {
                   while (1) {
                     switch (_context32.prev = _context32.next) {
                       case 0:
@@ -778,8 +798,8 @@ var start = exports.start = function _callee() {
                   }
                 }, null, undefined);
               },
-              item: function item(_ref26) {
-                var itemId = _ref26.itemId;
+              item: function item(_ref25) {
+                var itemId = _ref25.itemId;
                 return regeneratorRuntime.async(function item$(_context33) {
                   while (1) {
                     switch (_context33.prev = _context33.next) {
@@ -800,32 +820,97 @@ var start = exports.start = function _callee() {
                 }, null, undefined);
               }
             },
-            Mutation: {
-              createUser: function createUser(root, args, context, info) {
-                var errors, errorList, res, user, token;
-                return regeneratorRuntime.async(function createUser$(_context34) {
+            Review: {
+              from: function from(_ref26) {
+                var userId = _ref26.userId;
+                return regeneratorRuntime.async(function from$(_context34) {
                   while (1) {
                     switch (_context34.prev = _context34.next) {
                       case 0:
-                        errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'offered', 'requested', 'activity'));
+                        _context34.t0 = prepare;
                         _context34.next = 3;
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
+
+                      case 3:
+                        _context34.t1 = _context34.sent;
+                        return _context34.abrupt('return', (0, _context34.t0)(_context34.t1));
+
+                      case 5:
+                      case 'end':
+                        return _context34.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+              to: function to(_ref27) {
+                var userId = _ref27.userId;
+                return regeneratorRuntime.async(function to$(_context35) {
+                  while (1) {
+                    switch (_context35.prev = _context35.next) {
+                      case 0:
+                        _context35.t0 = prepare;
+                        _context35.next = 3;
+                        return regeneratorRuntime.awrap(Users.findOne((0, _mongodb.ObjectId)(userId)));
+
+                      case 3:
+                        _context35.t1 = _context35.sent;
+                        return _context35.abrupt('return', (0, _context35.t0)(_context35.t1));
+
+                      case 5:
+                      case 'end':
+                        return _context35.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+              item: function item(_ref28) {
+                var itemId = _ref28.itemId;
+                return regeneratorRuntime.async(function item$(_context36) {
+                  while (1) {
+                    switch (_context36.prev = _context36.next) {
+                      case 0:
+                        _context36.t0 = prepare;
+                        _context36.next = 3;
+                        return regeneratorRuntime.awrap(Items.findOne((0, _mongodb.ObjectId)(itemId)));
+
+                      case 3:
+                        _context36.t1 = _context36.sent;
+                        return _context36.abrupt('return', (0, _context36.t0)(_context36.t1));
+
+                      case 5:
+                      case 'end':
+                        return _context36.stop();
+                    }
+                  }
+                }, null, undefined);
+              }
+            },
+            Mutation: {
+              createUser: function createUser(root, args, context, info) {
+                var errors, errorList, res, user, token;
+                return regeneratorRuntime.async(function createUser$(_context37) {
+                  while (1) {
+                    switch (_context37.prev = _context37.next) {
+                      case 0:
+                        errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'offered', 'requested', 'activity', 'conversations'));
+                        _context37.next = 3;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.username.toLowerCase() }));
 
                       case 3:
-                        if (!_context34.sent) {
-                          _context34.next = 5;
+                        if (!_context37.sent) {
+                          _context37.next = 5;
                           break;
                         }
 
                         errors['username'] = 'User ' + args.username.toLowerCase() + ' already exists';
 
                       case 5:
-                        _context34.next = 7;
+                        _context37.next = 7;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.email.toLowerCase() }));
 
                       case 7:
-                        if (!_context34.sent) {
-                          _context34.next = 9;
+                        if (!_context37.sent) {
+                          _context37.next = 9;
                           break;
                         }
 
@@ -833,7 +918,7 @@ var start = exports.start = function _callee() {
 
                       case 9:
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context34.next = 15;
+                          _context37.next = 15;
                           break;
                         }
 
@@ -845,24 +930,24 @@ var start = exports.start = function _callee() {
                         throw new _validationError2.default(errorList);
 
                       case 15:
-                        _context34.next = 17;
+                        _context37.next = 17;
                         return regeneratorRuntime.awrap(Users.insert((0, _fix2.default)(args)));
 
                       case 17:
-                        res = _context34.sent;
-                        _context34.t0 = prepare;
-                        _context34.next = 21;
+                        res = _context37.sent;
+                        _context37.t0 = prepare;
+                        _context37.next = 21;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: res.insertedIds[0] }));
 
                       case 21:
-                        _context34.t1 = _context34.sent;
-                        user = (0, _context34.t0)(_context34.t1);
+                        _context37.t1 = _context37.sent;
+                        user = (0, _context37.t0)(_context37.t1);
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context34.abrupt('return', { token: token, user: user });
+                        return _context37.abrupt('return', { token: token, user: user });
 
                       case 25:
                       case 'end':
-                        return _context34.stop();
+                        return _context37.stop();
                     }
                   }
                 }, null, undefined);
@@ -870,69 +955,69 @@ var start = exports.start = function _callee() {
               signinUser: function signinUser(root, args, context, info) {
                 var user, token, _user2, _token;
 
-                return regeneratorRuntime.async(function signinUser$(_context35) {
+                return regeneratorRuntime.async(function signinUser$(_context38) {
                   while (1) {
-                    switch (_context35.prev = _context35.next) {
+                    switch (_context38.prev = _context38.next) {
                       case 0:
-                        _context35.next = 2;
+                        _context38.next = 2;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.usernameOrEmail.toLowerCase() }));
 
                       case 2:
-                        if (!_context35.sent) {
-                          _context35.next = 14;
+                        if (!_context38.sent) {
+                          _context38.next = 14;
                           break;
                         }
 
-                        _context35.next = 5;
+                        _context38.next = 5;
                         return regeneratorRuntime.awrap(Users.findOne({ username: args.usernameOrEmail.toLowerCase(), password: args.password }));
 
                       case 5:
-                        user = _context35.sent;
+                        user = _context38.sent;
 
                         if (!user) {
-                          _context35.next = 11;
+                          _context38.next = 11;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context35.abrupt('return', { token: token, user: user });
+                        return _context38.abrupt('return', { token: token, user: user });
 
                       case 11:
                         throw new _validationError2.default('Password incorrect');
 
                       case 12:
-                        _context35.next = 29;
+                        _context38.next = 29;
                         break;
 
                       case 14:
-                        _context35.next = 16;
+                        _context38.next = 16;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.usernameOrEmail.toLowerCase() }));
 
                       case 16:
-                        if (!_context35.sent) {
-                          _context35.next = 28;
+                        if (!_context38.sent) {
+                          _context38.next = 28;
                           break;
                         }
 
-                        _context35.next = 19;
+                        _context38.next = 19;
                         return regeneratorRuntime.awrap(Users.findOne({ email: args.usernameOrEmail.toLowerCase(), password: args.password }));
 
                       case 19:
-                        _user2 = _context35.sent;
+                        _user2 = _context38.sent;
 
                         if (!_user2) {
-                          _context35.next = 25;
+                          _context38.next = 25;
                           break;
                         }
 
                         _token = _jsonwebtoken2.default.sign(_lodash2.default.omit(_user2, 'password'), jwtSecret);
-                        return _context35.abrupt('return', { token: _token, user: _user2 });
+                        return _context38.abrupt('return', { token: _token, user: _user2 });
 
                       case 25:
                         throw new _validationError2.default('Password incorrect');
 
                       case 26:
-                        _context35.next = 29;
+                        _context38.next = 29;
                         break;
 
                       case 28:
@@ -940,22 +1025,22 @@ var start = exports.start = function _callee() {
 
                       case 29:
                       case 'end':
-                        return _context35.stop();
+                        return _context38.stop();
                     }
                   }
                 }, null, undefined);
               },
               updateUser: function updateUser(root, args, context, info) {
                 var currentUser, errors, errorList, updateArgs, updatedUser, user, token;
-                return regeneratorRuntime.async(function updateUser$(_context36) {
+                return regeneratorRuntime.async(function updateUser$(_context39) {
                   while (1) {
-                    switch (_context36.prev = _context36.next) {
+                    switch (_context39.prev = _context39.next) {
                       case 0:
                         currentUser = (0, _authenticate2.default)(context.req, context.res, models);
                         errors = (0, _formValidation2.default)(args, true);
 
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context36.next = 6;
+                          _context39.next = 6;
                           break;
                         }
 
@@ -968,44 +1053,44 @@ var start = exports.start = function _callee() {
 
                       case 6:
                         updateArgs = _lodash2.default.omit(args, '_id');
-                        _context36.next = 9;
+                        _context39.next = 9;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args._id) }, { $set: updateArgs
                         }, { returnNewDocument: true }));
 
                       case 9:
-                        updatedUser = _context36.sent;
-                        _context36.next = 12;
+                        updatedUser = _context39.sent;
+                        _context39.next = 12;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args._id) }));
 
                       case 12:
-                        user = _context36.sent;
+                        user = _context39.sent;
 
                         if (!user) {
-                          _context36.next = 16;
+                          _context39.next = 16;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context36.abrupt('return', { token: token, user: user });
+                        return _context39.abrupt('return', { token: token, user: user });
 
                       case 16:
                       case 'end':
-                        return _context36.stop();
+                        return _context39.stop();
                     }
                   }
                 }, null, undefined);
               },
               changePassword: function changePassword(root, args, context, info) {
                 var currentUser, errors, errorList, updatedUser, user, token;
-                return regeneratorRuntime.async(function changePassword$(_context37) {
+                return regeneratorRuntime.async(function changePassword$(_context40) {
                   while (1) {
-                    switch (_context37.prev = _context37.next) {
+                    switch (_context40.prev = _context40.next) {
                       case 0:
                         currentUser = (0, _authenticate2.default)(context.req, context.res, models);
                         errors = (0, _formValidation2.default)(args, true);
 
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context37.next = 6;
+                          _context40.next = 6;
                           break;
                         }
 
@@ -1017,46 +1102,47 @@ var start = exports.start = function _callee() {
                         throw new _validationError2.default(errorList);
 
                       case 6:
-                        _context37.next = 8;
+                        _context40.next = 8;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args._id), password: args.currentPassword }, { $set: { password: args.password }
                         }, { returnNewDocument: true }));
 
                       case 8:
-                        updatedUser = _context37.sent;
-                        _context37.next = 11;
+                        updatedUser = _context40.sent;
+                        _context40.next = 11;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args._id), password: args.password }));
 
                       case 11:
-                        user = _context37.sent;
+                        user = _context40.sent;
 
                         if (!user) {
-                          _context37.next = 17;
+                          _context40.next = 17;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context37.abrupt('return', { token: token, user: user });
+                        return _context40.abrupt('return', { token: token, user: user });
 
                       case 17:
                         throw new _validationError2.default("Password incorrect");
 
                       case 18:
                       case 'end':
-                        return _context37.stop();
+                        return _context40.stop();
                     }
                   }
                 }, null, undefined);
               },
               createItem: function createItem(root, args, context, info) {
-                var errors, errorList, res, item, updatedUser, user, token;
-                return regeneratorRuntime.async(function createItem$(_context38) {
+                var errors, errorList, res, item, updatedUser, _updatedUser, user, token;
+
+                return regeneratorRuntime.async(function createItem$(_context41) {
                   while (1) {
-                    switch (_context38.prev = _context38.next) {
+                    switch (_context41.prev = _context41.next) {
                       case 0:
                         errors = (0, _formValidation2.default)(_lodash2.default.omit(args, 'views'));
 
                         if ((0, _isEmpty2.default)(errors)) {
-                          _context38.next = 7;
+                          _context41.next = 7;
                           break;
                         }
 
@@ -1068,19 +1154,25 @@ var start = exports.start = function _callee() {
                         throw new _validationError2.default(errorList);
 
                       case 7:
-                        _context38.next = 9;
+                        _context41.next = 9;
                         return regeneratorRuntime.awrap(Items.insert((0, _fix2.default)(args)));
 
                       case 9:
-                        res = _context38.sent;
-                        _context38.t0 = prepare;
-                        _context38.next = 13;
+                        res = _context41.sent;
+                        _context41.t0 = prepare;
+                        _context41.next = 13;
                         return regeneratorRuntime.awrap(Items.findOne({ _id: res.insertedIds[0] }));
 
                       case 13:
-                        _context38.t1 = _context38.sent;
-                        item = (0, _context38.t0)(_context38.t1);
-                        _context38.next = 17;
+                        _context41.t1 = _context41.sent;
+                        item = (0, _context41.t0)(_context41.t1);
+
+                        if (!(args.type === 'offer')) {
+                          _context41.next = 21;
+                          break;
+                        }
+
+                        _context41.next = 18;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userId) }, { $set: {
                             lastLocation: args.location,
                             lastLatitude: args.latitude,
@@ -1091,25 +1183,44 @@ var start = exports.start = function _callee() {
                           }
                         }, { returnNewDocument: true }));
 
-                      case 17:
-                        updatedUser = _context38.sent;
-                        _context38.next = 20;
+                      case 18:
+                        updatedUser = _context41.sent;
+                        _context41.next = 24;
+                        break;
+
+                      case 21:
+                        _context41.next = 23;
+                        return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userId) }, { $set: {
+                            lastLocation: args.location,
+                            lastLatitude: args.latitude,
+                            lastLongitude: args.longitude
+                          },
+                          $push: {
+                            requested: res.insertedIds[0]
+                          }
+                        }, { returnNewDocument: true }));
+
+                      case 23:
+                        _updatedUser = _context41.sent;
+
+                      case 24:
+                        _context41.next = 26;
                         return regeneratorRuntime.awrap(Users.findOne({ _id: (0, _mongodb.ObjectId)(args.userId) }));
 
-                      case 20:
-                        user = _context38.sent;
+                      case 26:
+                        user = _context41.sent;
 
                         if (!(item && user)) {
-                          _context38.next = 24;
+                          _context41.next = 30;
                           break;
                         }
 
                         token = _jsonwebtoken2.default.sign(_lodash2.default.omit(user, 'password'), jwtSecret);
-                        return _context38.abrupt('return', { token: token, item: item });
+                        return _context41.abrupt('return', { token: token, item: item });
 
-                      case 24:
+                      case 30:
                       case 'end':
-                        return _context38.stop();
+                        return _context41.stop();
                     }
                   }
                 }, null, undefined);
@@ -1117,23 +1228,23 @@ var start = exports.start = function _callee() {
 
               createActivity: function createActivity(root, args, context, info) {
                 var res, activity, updateUser;
-                return regeneratorRuntime.async(function createActivity$(_context39) {
+                return regeneratorRuntime.async(function createActivity$(_context42) {
                   while (1) {
-                    switch (_context39.prev = _context39.next) {
+                    switch (_context42.prev = _context42.next) {
                       case 0:
-                        _context39.next = 2;
+                        _context42.next = 2;
                         return regeneratorRuntime.awrap(Activities.insert(args));
 
                       case 2:
-                        res = _context39.sent;
-                        _context39.t0 = prepare;
-                        _context39.next = 6;
+                        res = _context42.sent;
+                        _context42.t0 = prepare;
+                        _context42.next = 6;
                         return regeneratorRuntime.awrap(Activities.findOne({ _id: res.insertedIds[0] }));
 
                       case 6:
-                        _context39.t1 = _context39.sent;
-                        activity = (0, _context39.t0)(_context39.t1);
-                        _context39.next = 10;
+                        _context42.t1 = _context42.sent;
+                        activity = (0, _context42.t0)(_context42.t1);
+                        _context42.next = 10;
                         return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userId) }, { $set: {
                             $push: {
                               activity: res.insertedIds[0]
@@ -1142,121 +1253,10 @@ var start = exports.start = function _callee() {
                         }));
 
                       case 10:
-                        updateUser = _context39.sent;
-                        return _context39.abrupt('return', true);
-
-                      case 12:
-                      case 'end':
-                        return _context39.stop();
-                    }
-                  }
-                }, null, undefined);
-              },
-
-              createConversation: function createConversation(root, args, context, info) {
-                var res;
-                return regeneratorRuntime.async(function createConversation$(_context40) {
-                  while (1) {
-                    switch (_context40.prev = _context40.next) {
-                      case 0:
-                        _context40.next = 2;
-                        return regeneratorRuntime.awrap(Conversations.insert(args));
-
-                      case 2:
-                        res = _context40.sent;
-                        return _context40.abrupt('return', res.insertedIds[0]);
-
-                      case 4:
-                      case 'end':
-                        return _context40.stop();
-                    }
-                  }
-                }, null, undefined);
-              },
-
-              createMessage: function createMessage(root, args, context, info) {
-                var res, updateConversation;
-                return regeneratorRuntime.async(function createMessage$(_context41) {
-                  while (1) {
-                    switch (_context41.prev = _context41.next) {
-                      case 0:
-                        _context41.next = 2;
-                        return regeneratorRuntime.awrap(Messages.insert(args));
-
-                      case 2:
-                        res = _context41.sent;
-                        _context41.next = 5;
-                        return regeneratorRuntime.awrap(Conversations.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.conversation) }, {
-                          $push: {
-                            messages: res.insertedIds[0]
-                          }
-                        }));
-
-                      case 5:
-                        updateConversation = _context41.sent;
-                        return _context41.abrupt('return', res.insertedIds[0]);
-
-                      case 7:
-                      case 'end':
-                        return _context41.stop();
-                    }
-                  }
-                }, null, undefined);
-              },
-
-              createView: function createView(root, args, context, info) {
-                var thisItem, checkView, res, updateItemViews, updateItemViewCOunt;
-                return regeneratorRuntime.async(function createView$(_context42) {
-                  while (1) {
-                    switch (_context42.prev = _context42.next) {
-                      case 0:
-                        _context42.next = 2;
-                        return regeneratorRuntime.awrap(Items.findOne({ _id: (0, _mongodb.ObjectId)(args.item) }));
-
-                      case 2:
-                        thisItem = _context42.sent;
-                        _context42.next = 5;
-                        return regeneratorRuntime.awrap(Views.findOne({
-                          user: args.user,
-                          item: args.item
-                        }));
-
-                      case 5:
-                        checkView = _context42.sent;
-                        _context42.next = 8;
-                        return regeneratorRuntime.awrap(Views.insert(args));
-
-                      case 8:
-                        res = _context42.sent;
-                        _context42.next = 11;
-                        return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
-                          $push: {
-                            views: res.insertedIds[0]
-                          }
-                        }));
-
-                      case 11:
-                        updateItemViews = _context42.sent;
-
-                        if (checkView) {
-                          _context42.next = 16;
-                          break;
-                        }
-
-                        _context42.next = 15;
-                        return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
-                          $inc: {
-                            viewCount: 1
-                          }
-                        }));
-
-                      case 15:
-                        updateItemViewCOunt = _context42.sent;
-
-                      case 16:
+                        updateUser = _context42.sent;
                         return _context42.abrupt('return', true);
 
-                      case 17:
+                      case 12:
                       case 'end':
                         return _context42.stop();
                     }
@@ -1264,36 +1264,225 @@ var start = exports.start = function _callee() {
                 }, null, undefined);
               },
 
-              createReview: function createReview(root, args, context, info) {
-                var reviewForThisItem, thisReview;
-                return regeneratorRuntime.async(function createReview$(_context43) {
+              createConversation: function createConversation(root, args, context, info) {
+                var res, updateUserFrom, updateUserTo;
+                return regeneratorRuntime.async(function createConversation$(_context43) {
                   while (1) {
                     switch (_context43.prev = _context43.next) {
                       case 0:
                         _context43.next = 2;
-                        return regeneratorRuntime.awrap(Reviews.findOne({ item: (0, _mongodb.ObjectId)(args.item) }));
+                        return regeneratorRuntime.awrap(Conversations.insert(args));
 
                       case 2:
-                        reviewForThisItem = _context43.sent;
+                        res = _context43.sent;
+                        _context43.next = 5;
+                        return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userFrom) }, {
+                          $push: {
+                            conversations: res.insertedIds[0]
+                          }
+                        }));
 
-                        if (reviewForThisItem) {
-                          _context43.next = 8;
+                      case 5:
+                        updateUserFrom = _context43.sent;
+                        _context43.next = 8;
+                        return regeneratorRuntime.awrap(Users.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.userTo) }, {
+                          $push: {
+                            conversations: res.insertedIds[0]
+                          }
+                        }));
+
+                      case 8:
+                        updateUserTo = _context43.sent;
+                        return _context43.abrupt('return', res.insertedIds[0]);
+
+                      case 10:
+                      case 'end':
+                        return _context43.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+
+              createMessage: function createMessage(root, args, context, info) {
+                var res, updateConversation;
+                return regeneratorRuntime.async(function createMessage$(_context44) {
+                  while (1) {
+                    switch (_context44.prev = _context44.next) {
+                      case 0:
+                        _context44.next = 2;
+                        return regeneratorRuntime.awrap(Messages.insert(args));
+
+                      case 2:
+                        res = _context44.sent;
+                        _context44.next = 5;
+                        return regeneratorRuntime.awrap(Conversations.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.conversation) }, {
+                          $set: {
+                            lastDate: new Date().toISOString()
+                          },
+                          $push: {
+                            messages: res.insertedIds[0]
+                          }
+                        }));
+
+                      case 5:
+                        updateConversation = _context44.sent;
+                        return _context44.abrupt('return', res.insertedIds[0]);
+
+                      case 7:
+                      case 'end':
+                        return _context44.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+
+              viewActivity: function viewActivity(root, args, context, info) {
+                var activityList, res;
+                return regeneratorRuntime.async(function viewActivity$(_context45) {
+                  while (1) {
+                    switch (_context45.prev = _context45.next) {
+                      case 0:
+                        activityList = [];
+
+                        args.activityId.map(function (act) {
+                          activityList.push((0, _mongodb.ObjectId)(act));
+                        });
+                        _context45.next = 4;
+                        return regeneratorRuntime.awrap(Activities.update({
+                          _id: { $in: activityList } }, { $set: { viewed: true } }, { multi: true }));
+
+                      case 4:
+                        res = _context45.sent;
+                        return _context45.abrupt('return', true);
+
+                      case 6:
+                      case 'end':
+                        return _context45.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+
+              viewMessage: function viewMessage(root, args, context, info) {
+                var res;
+                return regeneratorRuntime.async(function viewMessage$(_context46) {
+                  while (1) {
+                    switch (_context46.prev = _context46.next) {
+                      case 0:
+                        if (!(args.userFrom !== args.userId)) {
+                          _context46.next = 5;
                           break;
                         }
 
-                        _context43.next = 6;
+                        _context46.next = 3;
+                        return regeneratorRuntime.awrap(Messages.update({
+                          conversation: args.conversationId.toString() }, { $set: { read: true } }, { multi: true }));
+
+                      case 3:
+                        res = _context46.sent;
+                        return _context46.abrupt('return', true);
+
+                      case 5:
+                        return _context46.abrupt('return', false);
+
+                      case 6:
+                      case 'end':
+                        return _context46.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+
+              createView: function createView(root, args, context, info) {
+                var thisItem, checkView, res, updateItemViews, updateItemViewCOunt;
+                return regeneratorRuntime.async(function createView$(_context47) {
+                  while (1) {
+                    switch (_context47.prev = _context47.next) {
+                      case 0:
+                        _context47.next = 2;
+                        return regeneratorRuntime.awrap(Items.findOne({ _id: (0, _mongodb.ObjectId)(args.item) }));
+
+                      case 2:
+                        thisItem = _context47.sent;
+                        _context47.next = 5;
+                        return regeneratorRuntime.awrap(Views.findOne({
+                          user: args.user,
+                          item: args.item
+                        }));
+
+                      case 5:
+                        checkView = _context47.sent;
+                        _context47.next = 8;
+                        return regeneratorRuntime.awrap(Views.insert(args));
+
+                      case 8:
+                        res = _context47.sent;
+                        _context47.next = 11;
+                        return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
+                          $push: {
+                            views: res.insertedIds[0]
+                          }
+                        }));
+
+                      case 11:
+                        updateItemViews = _context47.sent;
+
+                        if (checkView) {
+                          _context47.next = 16;
+                          break;
+                        }
+
+                        _context47.next = 15;
+                        return regeneratorRuntime.awrap(Items.findOneAndUpdate({ _id: (0, _mongodb.ObjectId)(args.item) }, {
+                          $inc: {
+                            viewCount: 1
+                          }
+                        }));
+
+                      case 15:
+                        updateItemViewCOunt = _context47.sent;
+
+                      case 16:
+                        return _context47.abrupt('return', true);
+
+                      case 17:
+                      case 'end':
+                        return _context47.stop();
+                    }
+                  }
+                }, null, undefined);
+              },
+
+              createReview: function createReview(root, args, context, info) {
+                var reviewForThisItem, thisReview;
+                return regeneratorRuntime.async(function createReview$(_context48) {
+                  while (1) {
+                    switch (_context48.prev = _context48.next) {
+                      case 0:
+                        _context48.next = 2;
+                        return regeneratorRuntime.awrap(Reviews.findOne({ item: (0, _mongodb.ObjectId)(args.item) }));
+
+                      case 2:
+                        reviewForThisItem = _context48.sent;
+
+                        if (reviewForThisItem) {
+                          _context48.next = 8;
+                          break;
+                        }
+
+                        _context48.next = 6;
                         return regeneratorRuntime.awrap(Reviews.insert(args));
 
                       case 6:
-                        thisReview = _context43.sent;
-                        return _context43.abrupt('return', true);
+                        thisReview = _context48.sent;
+                        return _context48.abrupt('return', true);
 
                       case 8:
-                        return _context43.abrupt('return', false);
+                        return _context48.abrupt('return', false);
 
                       case 9:
                       case 'end':
-                        return _context43.stop();
+                        return _context48.stop();
                     }
                   }
                 }, null, undefined);
@@ -1374,18 +1563,18 @@ var start = exports.start = function _callee() {
             console.log('Visit ' + URL + ':' + PORT);
           });
 
-          _context44.next = 24;
+          _context49.next = 24;
           break;
 
         case 21:
-          _context44.prev = 21;
-          _context44.t0 = _context44['catch'](0);
+          _context49.prev = 21;
+          _context49.t0 = _context49['catch'](0);
 
-          console.log(_context44.t0);
+          console.log(_context49.t0);
 
         case 24:
         case 'end':
-          return _context44.stop();
+          return _context49.stop();
       }
     }
   }, null, undefined, [[0, 21]]);
