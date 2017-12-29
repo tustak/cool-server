@@ -10,12 +10,12 @@ var Reviews;
 var Activities;
 var Messages;
 var Conversations;
+var Transactions;
+var Requests;
 
 const getModels = async () => {
 	try {
 	    db = await MongoClient.connect(MONGO_URL)
-
-	    const viewSchema = 
 
 	    Users = db.collection('users')
 	    Items = db.collection('items')
@@ -24,7 +24,9 @@ const getModels = async () => {
 	    Activities = db.collection('activities')
 	    Messages = db.collection('messages')
 	    Conversations = db.collection('conversations')
-	    return {Users, Items, Views, Reviews, Activities, Messages, Conversations}
+	    Transactions = db.collection('transactions')
+	    Requests = db.collection('requests')
+	    return {Users, Items, Views, Reviews, Activities, Messages, Conversations, Transactions, Requests}
 	}
 	catch (e) {
 	    console.log(e)

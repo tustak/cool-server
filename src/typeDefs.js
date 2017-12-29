@@ -16,7 +16,7 @@ const typeDefs = [`
       messagesByConversationId(_id: String!): [Message!]
     }
 
-    type SigninPayload {
+    type UserPayload {
       token: String
       user: User
     }
@@ -64,9 +64,11 @@ const typeDefs = [`
       lastLocation: String
       lastLatitude: Float
       lastLongitude: Float
-      rating: Int
       activity: [Activity!]
       conversations: [Conversation!]
+      reviews: [Review!]
+      transactions: [Transaction!]
+      requests: [Request!]
     }
 
     type Activity {
@@ -110,11 +112,43 @@ const typeDefs = [`
       description: String!
       picturePath: String!
       created: String!
+      activated: [String!]
+      deleted: [String!]
       active: Boolean!
       user: User
       views: [View]!
       viewCount: Int!
       type: String!
+      reviews: [Review!]
+      transactions: [Transaction!]
+      requests: [Request!]
+    }
+
+    type Transaction {
+      _id: String!
+      item: Item!
+      userFrom: User!
+      userTo: User!
+      dateCreated: String!
+      active: Boolean!
+      dateFinished: String
+      request: Request!
+      reviewFrom: Review
+      reviewTo: Review
+    }
+
+    type Request {
+      _id: String!
+      item: Item!
+      userFrom: User!
+      userTo: User!
+      date: String!
+      message: String!
+      active: Boolean!
+      accepted: Boolean!
+      responseDate: String!
+      responseMessage: String!
+      viewed: Boolean!
     }
 
     type View {
@@ -126,27 +160,37 @@ const typeDefs = [`
 
     type Review {
       _id: String
-      from: User
-      to: User
-      date: String
-      item: Item
-      rate: Int
+      transaction: Transaction!
+      userFrom: User!
+      userTo: User!
+      date: String!
+      item: Item!
+      rate: Int!
       comment: String
     }
 
     type Mutation {
-      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean, activity: [String!], conversations: [String!]): SigninPayload
-      signinUser(usernameOrEmail: String!, password: String!): SigninPayload
-      updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): SigninPayload
-      changePassword(_id: String!, currentPassword: String!, password: String!, repeatPassword: String!): SigninPayload
-      createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, active: Boolean!, views: [String]!, viewCount: Int!, type: String!): ItemToken
+      createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean, activity: [String!], conversations: [String!], reviews: [String!], transactions: [String!], requests: [String!]): UserPayload
+      signinUser(usernameOrEmail: String!, password: String!): UserPayload
+      updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): UserPayload
+      changePassword(_id: String!, currentPassword: String!, password: String!, repeatPassword: String!): UserPayload
+      createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, activated: [String!], deleted: [String!], active: Boolean!, views: [String]!, viewCount: Int!, type: String!, reviews: [String!], transactions: [String!], requests: [String!]): ItemToken
+      deleteItem(_id: String!, date: String!): Boolean
+      activateItem(id: String!, date: String!): Boolean
+      createRequest(item: String!, userFrom: String!, userTo: String!, date: String!, message: String!, active: Boolean!, viewed: Boolean!, accepted: Boolean!): UserPayload
+      cancelRequest(_id: String!, date: String!, userFrom: String!, userTo: String!): UserPayload
+      acceptRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): String
+      rejectRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): UserPayload
+      createTransaction(item: String!, user: String!, userFrom: String!, userTo: String!, dateCreated: String!, active: String!, dateFinished: String!, request: String!): UserPayload
+      returnItem(transaction: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, reviewMessage: String!): UserPayload
       createView(user: String!, item: String!, date: String!): Boolean
-      createReview(from: String!, to: String!, date: String!, item: String!, rate: Int!, comment: String!): Boolean
+      createReview(transaction: String!, userFrom: String!, userTo: String!, date: String!, item: String!, rate: Int!, comment: String!): UserPayload
       createActivity(type: String!, user: String!, activityId: String!, date: String!, viewed: Boolean!, item: String, review: String, message: String): Boolean
       createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!], lastDate: String!): String
-      createMessage(conversation: String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): String
+      createMessage(conversation: String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): UserPayload
       viewActivity(activityId: [String!]): Boolean
       viewMessage(conversationId: String!, userId: String!, userFrom: String!): Boolean
+      testCreateUsers(number: Int!): Boolean
     }
 
     schema {

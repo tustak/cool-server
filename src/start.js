@@ -45,6 +45,8 @@ export const start = async () => {
     const Activities = models.Activities
     const Messages = models.Messages
     const Conversations = models.Conversations
+    const Transactions = models.Transactions
+    const Requests = models.Requests
 
     const resolvers = {
       Query: {
@@ -100,6 +102,7 @@ export const start = async () => {
       },
       User: {
         offered: async (user) => {
+          console.log(user)
           return (
             await Items.find(
               {_id: {$in: user.offered}}
@@ -126,8 +129,34 @@ export const start = async () => {
               {_id: {$in: user.conversations}}
             ).toArray()
           )
-        }
+        },
+        reviews: async (user) => {
+          return (
+            await Reviews.find(
+              {_id: {$in: user.reviews}}
+            ).toArray()
+          )
+        },
+        transactions: async (user) => {
+          const transactionList = []
+          user.transactions.map(transaction => {transactionList.push(ObjectId(transaction.toString()))})
+          return (
+            await Transactions.find(
+              {_id: {$in: transactionList}}
+            ).toArray()
+          )
+        },
+        requests: async (user) => {
+          const requestList = []
+          user.requests.map(req => {requestList.push(ObjectId(req.toString()))})
+          return (
+            await Requests.find(
+              {_id: {$in: requestList}}
+            ).toArray()
+          )
+        },
       },
+
       Item: {
         user: async ({userId}) => {
           return prepare(await Users.findOne(ObjectId(userId)))
@@ -138,8 +167,79 @@ export const start = async () => {
               {_id: {$in: item.views}}
             ).toArray()
           )
-        }
+        },
+        reviews: async (item) => {
+          return (
+            await Reviews.find(
+            {
+              _id: {$in: item.reviews}
+            }).toArray()
+          )
+        },
+        transactions: async (item) => {
+          return (
+            await Transactions.find(
+            {
+              _id: {$in: item.transactions}
+            }).toArray()
+          )
+        },
+        requests: async (item) => {
+          const requestList = []
+          item.requests.map(req => {requestList.push(ObjectId(req.toString()))})
+          return (
+            await Requests.find(
+              {_id: {$in: requestList}}
+            ).toArray()
+          )
+        },
       },
+
+      Transaction: {
+        item: async ({item}) => {
+          console.log('item')
+          console.log(item)
+          return prepare(await Items.findOne(ObjectId(item)))
+        },
+        userFrom: async ({userFrom}) => {
+          console.log('userFrom')
+          console.log(userFrom)
+          return prepare(await Users.findOne(ObjectId(userFrom)))
+        },
+        userTo: async ({userTo}) => {
+          console.log('useTo')
+          console.log(userTo)
+          return prepare(await Users.findOne(ObjectId(userTo)))
+        },
+        reviewFrom: async ({reviewFrom}) => {
+          console.log('reviewFrom')
+          console.log(reviewFrom)
+          return prepare(await Reviews.findOne(ObjectId(reviewFrom)))
+        },
+        reviewTo: async ({reviewTo}) => {
+          console.log('reviewTo')
+          console.log(reviewTo)
+          return prepare(await Reviews.findOne(ObjectId(reviewTo)))
+        },
+        request: async ({request}) => {
+          console.log('request')
+          console.log(request)
+          return prepare(await Requests.findOne(ObjectId(request)))
+        },
+      },
+
+      Request: {
+        item: async ({item}) => {
+          return prepare(await Items.findOne(ObjectId(item)))
+        },
+        userFrom: async (request) => {
+          return prepare(await Users.findOne(ObjectId(request.userFrom)))
+        },
+        userTo: async (request) => {
+          return prepare(await Users.findOne(ObjectId(request.userTo)))
+        },
+      },
+
       Activity: {
         user: async({user}) => {
           return prepare(await Users.findOne(ObjectId(user)))
@@ -195,10 +295,14 @@ export const start = async () => {
         }
       },
       Review: {
-        from: async ({userId}) => {
+        transaction: async({review}) => {
+          console.log(review)
+          return prepare(await Transactions.findOne(ObjectId(review.transaction)))
+        },
+        userFrom: async ({userId}) => {
           return prepare(await Users.findOne(ObjectId(userId)))
         },
-        to: async ({userId}) => {
+        userTo: async ({userId}) => {
           return prepare(await Users.findOne(ObjectId(userId)))
         },
         item: async ({itemId}) => {
@@ -207,7 +311,7 @@ export const start = async () => {
       },
       Mutation: {
         createUser: async (root, args, context, info) => {
-          let errors = validateInput(_.omit(args, 'offered', 'requested', 'activity', 'conversations'))
+          let errors = validateInput(_.omit(args, 'offered', 'requested', 'activity', 'conversations', 'reviews', 'transactions', 'requests'))
           if (await Users.findOne({username: args.username.toLowerCase()})) {
             errors['username'] = `User ${args.username.toLowerCase()} already exists`
           }
@@ -323,7 +427,7 @@ export const start = async () => {
           }
         },
         createItem: async (root, args, context, info) => {
-          let errors = validateInput(_.omit(args, 'views'))
+          let errors = validateInput(_.omit(args, 'views', 'activated', 'deleted', 'reviews', 'transactions', 'requests'))
 
           if (!isEmpty(errors)) {
             const errorList = []
@@ -387,6 +491,55 @@ export const start = async () => {
           }
         },
 
+        deleteItem: async(root, args, context, info) => {
+          const deleteItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args._id)},
+            {
+              $set: {active: false},
+              $push: {deleted: args.date}
+            }
+          )
+          console.log(deleteItem)
+          return true
+        },
+
+        activateItem: async(root, args, context, info) => {
+          const activateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args._id)},
+            {
+              $set: {active: true},
+              $push: {activated: args.date}
+            }
+          )
+          console.log(activateItem)
+          return true
+        },
+        /*
+        createTransaction: async(root, args, context, info) => {
+          const res = await Transactions.insert(args)
+          const updateUserFrom = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userFrom)},
+            {
+              $push:
+                {
+                  conversations: res.insertedIds[0]
+                }
+            }
+          )
+          const updateUserTo = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userTo)},
+            {
+              $push:
+                {
+                  conversations: res.insertedIds[0]
+                }
+            }
+          )
+          return res.insertedIds[0]
+        },
+        */
+
+        // DONT USE ACTIVITIES ANYMORE
         createActivity: async(root, args, context, info) => {
           // Create new object every time something happens
           const res = await Activities.insert(args)
@@ -444,8 +597,228 @@ export const start = async () => {
               }
             }
           )
-          return res.insertedIds[0]
+
+          const user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
         },
+
+        createRequest: async(root, args, context, info) => {
+          const res = await Requests.insert(args)
+
+          const userList = [ObjectId(args.userFrom), ObjectId(args.userTo)]
+          const updateUsers = await Users.update(
+            {_id: {$in: userList}},
+            {
+              $push: {requests: res.insertedIds[0]}
+            },
+            {multi: true}
+          )
+
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $push: {requests: res.insertedIds[0]}
+            }
+          )
+
+          const user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
+
+        },
+
+        cancelRequest: async(root, args, context, info) => {
+          const res = await Requests.deleteOne({_id: ObjectId(args._id)})
+
+          const userList = [ObjectId(args.userFrom), ObjectId(args.userTo)]
+          const updateUsers = await Users.update(
+            {_id: {$in: userList}},
+            {
+              $pull: {requests: ObjectId(args._id)}
+            },
+            {multi: true}
+          )
+
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $pull: {requests: ObjectId(args._id)}
+            }
+          )
+
+          const user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
+
+        },
+
+        acceptRequest: async(root, args, context, info) => {   
+
+          // set request inactive
+          const updateRequest = await Requests.findOneAndUpdate(
+            {_id: ObjectId(args._id)},
+            {
+              $set: {active: false},
+            }
+          )
+
+          // update users
+          const updateUserFrom = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userFrom)},
+            {
+              $pull: {requests: ObjectId(args._id)},
+            }
+          )
+
+          const updateUserTo = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userTo)},
+            {
+              $pull: {requests: ObjectId(args._id)},
+            }
+          )
+
+          // update item
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $set: {active: false},
+              $pull: {requests: ObjectId(args._id)},
+            }
+          )
+
+          // return request id
+          return args._id
+        },
+
+        createTransaction: async(root, args, context, info) => {
+          // create transaction
+          const res = await Transactions.insert(args)
+
+          // update users
+          const updateUserFrom = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userFrom)},
+            {
+              $push: {transactions: res.insertedIds[0]},
+            }
+          )
+
+          const updateUserTo = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userTo)},
+            {
+              $push: {transactions: res.insertedIds[0]},
+            }
+          )
+
+          // update item
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $push: {transactions: res.insertedIds[0]},
+            }
+          )
+
+          // return userPayload
+          let user
+          if (args.user === args.userFrom) {
+            user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          }
+          if (args.user === args.userTo) {
+            user = await Users.findOne({_id: ObjectId(args.userTo)})  
+          }
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
+        },
+
+        rejectRequest: async(root, args, context, info) => {
+          const res = await Requests.deleteOne({_id: ObjectId(args._id)})
+
+          const userList = [ObjectId(args.userFrom), ObjectId(args.userTo)]
+          const updateUsers = await Users.update(
+            {_id: {$in: userList}},
+            {
+              $pull: {requests: ObjectId(args._id)}
+            },
+            {multi: true}
+          )
+
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $pull: {requests: ObjectId(args._id)}
+            }
+          )
+
+          const user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
+        },
+
+        /*returnItem: async(root, args, context, info) => {
+          const res = await Transactions.deleteOne({_id: ObjectId(args._id)})
+
+          const userList = [ObjectId(args.userFrom), ObjectId(args.userTo)]
+          const updateUsers = await Users.update(
+            {_id: {$in: userList}},
+            {
+              $pull: {requests: ObjectId(args._id)}
+            },
+            {multi: true}
+          )
+
+          const updateItem = await Items.findOneAndUpdate(
+            {_id: ObjectId(args.item)},
+            {
+              $pull: {requests: ObjectId(args._id)}
+            }
+          )
+
+          const user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
+        },*/
 
         viewActivity: async(root, args, context, info) => {
           const activityList = []
@@ -512,15 +885,76 @@ export const start = async () => {
 
         createReview: async(root, args, context, info) => {
           // Check if rating exists for this item
-          const reviewForThisItem = await Reviews.findOne({item: ObjectId(args.item)})
+          const review = await Reviews.findOne({transaction: args.transaction, userFrom: args.userFrom})
 
           // If doesnt exists...
-          if (!reviewForThisItem) {
+          if (!review) {
             const thisReview = await Reviews.insert(args)
-            return true
           }
 
-          return false
+          const user = await Users.findOne({_id: ObjectId(args.userFrom)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+          else {
+            throw new validationError("Error")
+          }
+
+        },
+
+        testCreateUsers: async(root, args, context, info) => {
+          const user1 = {
+            username: "andresmechali",
+            email: "andresmechali@gmail.com",
+            firstName: "Andres",
+            lastName: "Mechali",
+            password: "asd",
+            picturePath: 'no-image.jpg',
+            status: 'NEW MEMBER',
+            offered: [],
+            requested: [],
+            registered: new Date().toISOString(),
+            lastConnection: new Date().toISOString(),
+            radiusOfSearch: 20,
+            isAdmin: false,
+            isSuperAdmin: false,
+            activity: [],
+            conversations: [],
+            reviews: [],
+            transactions: [],
+            requests: [],
+          }
+
+          const user2 = {
+            username: "juanperez",
+            email: "juanperez@gmail.com",
+            firstName: "Juan",
+            lastName: "Perez",
+            password: "asd",
+            picturePath: 'no-image.jpg',
+            status: 'NEW MEMBER',
+            offered: [],
+            requested: [],
+            registered: new Date().toISOString(),
+            lastConnection: new Date().toISOString(),
+            radiusOfSearch: 20,
+            isAdmin: false,
+            isSuperAdmin: false,
+            activity: [],
+            conversations: [],
+            reviews: [],
+            transactions: [],
+            requests: [],
+          }
+
+          const users = [user1, user2]
+
+          const res = await Users.insertMany(users)
+
+          return true
 
         },
       },
