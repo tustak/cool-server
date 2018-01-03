@@ -10,8 +10,11 @@ const typeDefs = [`
       reviewsByFrom(from: String!): Float
       reviewsByTo(to: String!): Float
       reviewsByItem(item: String!): Float
+      reviewById(_id: String!): Review
+      reviewByTransactionAndUserFrom(transaction: String!, userFrom: String!): Review
       activityByUserIdItem(_id: String!, type: String!): [Activity]
       activityByUserIdMessage(_id: String!, type: String!): [Activity]
+      transactionById(_id: String!): Transaction
       conversationsByUserId(_id: String!): User
       messagesByConversationId(_id: String!): [Message!]
     }
@@ -182,9 +185,8 @@ const typeDefs = [`
       acceptRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): String
       rejectRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): UserPayload
       createTransaction(item: String!, user: String!, userFrom: String!, userTo: String!, dateCreated: String!, active: String!, dateFinished: String!, request: String!): UserPayload
-      returnItem(transaction: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, reviewMessage: String!): UserPayload
+      returnItem(transaction: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, comment: String!, rate: Int!): UserPayload
       createView(user: String!, item: String!, date: String!): Boolean
-      createReview(transaction: String!, userFrom: String!, userTo: String!, date: String!, item: String!, rate: Int!, comment: String!): UserPayload
       createActivity(type: String!, user: String!, activityId: String!, date: String!, viewed: Boolean!, item: String, review: String, message: String): Boolean
       createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!], lastDate: String!): String
       createMessage(conversation: String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): UserPayload
