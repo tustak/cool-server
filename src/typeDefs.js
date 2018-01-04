@@ -88,7 +88,6 @@ const typeDefs = [`
 
     type Conversation {
       _id: String
-      item: Item!
       userFrom: User!
       userTo: User!
       messages: [Message!]
@@ -98,7 +97,6 @@ const typeDefs = [`
     type Message {
       _id: String
       conversation: Conversation!
-      item: Item!
       userFrom: User!
       userTo: User!
       message: String!
@@ -188,8 +186,8 @@ const typeDefs = [`
       returnItem(transaction: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, comment: String!, rate: Int!): UserPayload
       createView(user: String!, item: String!, date: String!): Boolean
       createActivity(type: String!, user: String!, activityId: String!, date: String!, viewed: Boolean!, item: String, review: String, message: String): Boolean
-      createConversation(item: String!, userFrom: String!, userTo: String!, messages: [String!], lastDate: String!): String
-      createMessage(conversation: String!, item: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): UserPayload
+      createConversation(userFrom: String!, userTo: String!, messages: [String!], lastDate: String!): String
+      createMessage(conversation: String!, userFrom: String!, userTo: String!, message: String!, date: String!, read: Boolean!): UserPayload
       viewActivity(activityId: [String!]): Boolean
       viewMessage(conversationId: String!, userId: String!, userFrom: String!): Boolean
       testCreateUsers(number: Int!): Boolean

@@ -252,9 +252,6 @@ export const start = async () => {
         },
       },
       Conversation: {
-        item: async ({item}) => {
-          return prepare(await Items.findOne(ObjectId(item)))
-        },
         userFrom: async({userFrom}) => {
           return prepare(await Users.findOne(ObjectId(userFrom)))
         },
@@ -272,9 +269,6 @@ export const start = async () => {
       Message: {
         conversation: async ({conversation}) => {
           return prepare(await Conversations.findOne(ObjectId(conversation)))
-        },
-        item: async ({item}) => {
-          return prepare(await Items.findOne(ObjectId(item)))
         },
         userFrom: async({userFrom}) => {
           return prepare(await Users.findOne(ObjectId(userFrom)))
