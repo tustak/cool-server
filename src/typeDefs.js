@@ -178,7 +178,7 @@ const typeDefs = [`
       createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, activated: [String!], deleted: [String!], active: Boolean!, views: [String]!, viewCount: Int!, type: String!, reviews: [String!], transactions: [String!], requests: [String!]): ItemToken
       deleteItem(_id: String!, date: String!): Boolean
       activateItem(id: String!, date: String!): Boolean
-      createRequest(item: String!, userFrom: String!, userTo: String!, date: String!, message: String!, active: Boolean!, viewed: Boolean!, accepted: Boolean!): UserPayload
+      createRequest(item: String!, userFrom: String!, userTo: String!, date: String!, message: String!, active: Boolean!, viewed: Boolean!, accepted: Boolean!, responseDate: String!, responseMessage: String!): UserPayload
       cancelRequest(_id: String!, date: String!, userFrom: String!, userTo: String!): UserPayload
       acceptRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): String
       rejectRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): UserPayload
