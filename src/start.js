@@ -1,6 +1,8 @@
 import {MongoClient, ObjectId} from 'mongodb'
 import express from 'express'
 import bodyParser from 'body-parser'
+import multer from 'multer'
+import fs from 'fs'
 import {graphqlExpress, graphiqlExpress} from 'graphql-server-express'
 import {makeExecutableSchema} from 'graphql-tools'
 import cors from 'cors'
@@ -987,6 +989,47 @@ export const start = async () => {
         next();
       }
     });
+
+
+    // Receive photo and store it
+
+    var storage = multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, '/tmp/my-uploads')
+      },
+      filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now())
+      }
+    })
+
+    var upload = multer({ 
+        dest: './images/',
+        rename: function (fieldname, filename) {
+            return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
+        },
+        onFileUploadStart: function (file) {
+            console.log(file.fieldname + ' is starting ...')
+        },
+        onFileUploadData: function (file, data) {
+            console.log(data.length + ' of ' + file.fieldname + ' arrived')
+        },
+        onFileUploadComplete: function (file) {
+            console.log(file.fieldname + ' uploaded to  ' + file.path)
+        }
+    })
+
+    //app.use(upload.single('image'));
+
+    app.post('/upload/photo', upload.single('image'), function(req, res) {
+      console.log(req.file)
+      const filename = req.file.filename
+      const mimetype = req.file.mimetype.split("/")[1]
+      res.status(200).send({'filename': filename + '.' + mimetype})
+    })
+
+    // Apply bodyParser to all requests
+    app.use(bodyParser.urlencoded({ extended: false, limit: '5mb', parameterLimit: 100000 }))
+    app.use(bodyParser.json({limit: '5mb', parameterLimit: 100000 }))
     
     // Check if token has been modified
     app.use(function(req, res, next) {
@@ -1043,6 +1086,7 @@ export const start = async () => {
     app.use('/graphiql', graphiqlExpress({
       endpointURL: '/graphql',
     }))
+
 
     app.listen(PORT, () => {
       console.log(`Visit ${URL}:${PORT}`)
