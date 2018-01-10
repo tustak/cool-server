@@ -17,9 +17,10 @@ var Reviews;
 var Activities;
 var Messages;
 var Conversations;
+var Transactions;
+var Requests;
 
 var getModels = function _callee() {
-	var viewSchema;
 	return regeneratorRuntime.async(function _callee$(_context) {
 		while (1) {
 			switch (_context.prev = _context.next) {
@@ -30,28 +31,31 @@ var getModels = function _callee() {
 
 				case 3:
 					db = _context.sent;
-					viewSchema = Users = db.collection('users');
 
+
+					Users = db.collection('users');
 					Items = db.collection('items');
 					Views = db.collection('views');
 					Reviews = db.collection('reviews');
 					Activities = db.collection('activities');
 					Messages = db.collection('messages');
 					Conversations = db.collection('conversations');
-					return _context.abrupt('return', { Users: Users, Items: Items, Views: Views, Reviews: Reviews, Activities: Activities, Messages: Messages, Conversations: Conversations });
+					Transactions = db.collection('transactions');
+					Requests = db.collection('requests');
+					return _context.abrupt('return', { Users: Users, Items: Items, Views: Views, Reviews: Reviews, Activities: Activities, Messages: Messages, Conversations: Conversations, Transactions: Transactions, Requests: Requests });
 
-				case 14:
-					_context.prev = 14;
+				case 16:
+					_context.prev = 16;
 					_context.t0 = _context['catch'](0);
 
 					console.log(_context.t0);
 
-				case 17:
+				case 19:
 				case 'end':
 					return _context.stop();
 			}
 		}
-	}, null, undefined, [[0, 14]]);
+	}, null, undefined, [[0, 16]]);
 };
 
 exports.default = getModels;

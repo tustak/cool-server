@@ -174,10 +174,11 @@ const typeDefs = [`
       createUser(username: String!, email: String!, firstName: String!, lastName: String!, password: String!, picturePath: String!, status: String!, offered: [String], requested: [String], registered: String!, lastConnection: String!, radiusOfSearch: Int!, isAdmin: Boolean!, isSuperAdmin: Boolean, activity: [String!], conversations: [String!], reviews: [String!], transactions: [String!], requests: [String!]): UserPayload
       signinUser(usernameOrEmail: String!, password: String!): UserPayload
       updateUser(_id: String, dateOfBirth: String, countryOfBirth: String, countryOfResidence: String, cityOfResidence: String, postalCode: String, gender: String, phoneCode: String, phoneNumber: String, address: String, apartment: String, description: String): UserPayload
+      changeUserPicture(userId: String!, picturePath: String!): UserPayload
       changePassword(_id: String!, currentPassword: String!, password: String!, repeatPassword: String!): UserPayload
       createItem(name: String!, location: String!, latitude: Float!, longitude: Float!, description: String!, userId: String!, picturePath: String!, created: String!, activated: [String!], deleted: [String!], active: Boolean!, views: [String]!, viewCount: Int!, type: String!, reviews: [String!], transactions: [String!], requests: [String!]): ItemToken
       deleteItem(_id: String!, date: String!): Boolean
-      activateItem(id: String!, date: String!): Boolean
+      activateItem(_id: String!, date: String!): Boolean
       createRequest(item: String!, userFrom: String!, userTo: String!, date: String!, message: String!, active: Boolean!, viewed: Boolean!, accepted: Boolean!, responseDate: String!, responseMessage: String!): UserPayload
       cancelRequest(_id: String!, date: String!, userFrom: String!, userTo: String!): UserPayload
       acceptRequest(_id: String!, item: String!, date: String!, user: String!, userFrom: String!, userTo: String!, message: String!): String

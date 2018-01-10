@@ -3,6 +3,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import multer from 'multer'
 import fs from 'fs'
+import path from 'path'
 import {graphqlExpress, graphiqlExpress} from 'graphql-server-express'
 import {makeExecutableSchema} from 'graphql-tools'
 import cors from 'cors'
@@ -388,6 +389,25 @@ export const start = async () => {
               return {token, user}
           }
         },
+
+        changeUserPicture: async(root, args, context, info) => {
+          const updatedUser = await Users.findOneAndUpdate(
+            {_id: ObjectId(args.userId)}, 
+            {$set: 
+              {picturePath: args.picturePath}
+            }, 
+            {returnNewDocument: true}
+          )
+
+          const user = await Users.findOne({_id: ObjectId(args.userId)})
+          if (user) {
+            const token = jwt.sign(
+                _.omit(user, 'password'), 
+                jwtSecret)
+              return {token, user}
+          }
+        },
+
         changePassword: async(root, args, context, info) => {
           const currentUser = authenticate(context.req, context.res, models)
           let errors = validateInput(args, true)
@@ -492,7 +512,6 @@ export const start = async () => {
               $push: {deleted: args.date}
             }
           )
-          console.log(deleteItem)
           return true
         },
 
@@ -506,30 +525,6 @@ export const start = async () => {
           )
           return true
         },
-        /*
-        createTransaction: async(root, args, context, info) => {
-          const res = await Transactions.insert(args)
-          const updateUserFrom = await Users.findOneAndUpdate(
-            {_id: ObjectId(args.userFrom)},
-            {
-              $push:
-                {
-                  conversations: res.insertedIds[0]
-                }
-            }
-          )
-          const updateUserTo = await Users.findOneAndUpdate(
-            {_id: ObjectId(args.userTo)},
-            {
-              $push:
-                {
-                  conversations: res.insertedIds[0]
-                }
-            }
-          )
-          return res.insertedIds[0]
-        },
-        */
 
         // DONT USE ACTIVITIES ANYMORE
         createActivity: async(root, args, context, info) => {
@@ -551,26 +546,48 @@ export const start = async () => {
         },
 
         createConversation: async(root, args, context, info) => {
-          const res = await Conversations.insert(args)
-          const updateUserFrom = await Users.findOneAndUpdate(
-            {_id: ObjectId(args.userFrom)},
-            {
-              $push:
-                {
-                  conversations: res.insertedIds[0]
-                }
+          // Check if there is already a conversation between these users
+          const conv1 = await Conversations.findOne({
+            userFrom: args.userFrom,
+            userTo: args.userTo
+          })
+
+          const conv2 = await Conversations.findOne({
+            userFrom: args.userTo,
+            userTo: args.userConv
+          })
+
+          if (!conv1 && !conv2) {
+            const res = await Conversations.insert(args)
+            const updateUserFrom = await Users.findOneAndUpdate(
+              {_id: ObjectId(args.userFrom)},
+              {
+                $push:
+                  {
+                    conversations: res.insertedIds[0]
+                  }
+              }
+            )
+            const updateUserTo = await Users.findOneAndUpdate(
+              {_id: ObjectId(args.userTo)},
+              {
+                $push:
+                  {
+                    conversations: res.insertedIds[0]
+                  }
+              }
+            )
+            return res.insertedIds[0]
+          }
+          else {
+            if (!!conv1) {
+              return conv1._id.toString()
             }
-          )
-          const updateUserTo = await Users.findOneAndUpdate(
-            {_id: ObjectId(args.userTo)},
-            {
-              $push:
-                {
-                  conversations: res.insertedIds[0]
-                }
+            else if (!!conv2) {
+              return conv2._id.toString()
             }
-          )
-          return res.insertedIds[0]
+          }
+
         },
 
         createMessage: async(root, args, context, info) => {
@@ -924,7 +941,7 @@ export const start = async () => {
             firstName: "Andres",
             lastName: "Mechali",
             password: "asd",
-            picturePath: 'no-image.jpg',
+            picturePath: 'no-image.png',
             status: 'NEW MEMBER',
             offered: [],
             requested: [],
@@ -946,7 +963,7 @@ export const start = async () => {
             firstName: "Juan",
             lastName: "Perez",
             password: "asd",
-            picturePath: 'no-image.jpg',
+            picturePath: 'no-image.png',
             status: 'NEW MEMBER',
             offered: [],
             requested: [],
@@ -990,20 +1007,9 @@ export const start = async () => {
       }
     });
 
-
     // Receive photo and store it
-
-    var storage = multer.diskStorage({
-      destination: function (req, file, cb) {
-        cb(null, '/tmp/my-uploads')
-      },
-      filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now())
-      }
-    })
-
     var upload = multer({ 
-        dest: './images/',
+        dest: './public/images/',
         rename: function (fieldname, filename) {
             return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
         },
@@ -1018,19 +1024,11 @@ export const start = async () => {
         }
     })
 
-    //app.use(upload.single('image'));
-
-    app.post('/upload/photo', upload.single('image'), function(req, res) {
-      console.log(req.file)
-      const filename = req.file.filename
-      const mimetype = req.file.mimetype.split("/")[1]
-      res.status(200).send({'filename': filename + '.' + mimetype})
-    })
-
     // Apply bodyParser to all requests
     app.use(bodyParser.urlencoded({ extended: false, limit: '5mb', parameterLimit: 100000 }))
     app.use(bodyParser.json({limit: '5mb', parameterLimit: 100000 }))
-    
+    app.use(express.static(path.join(__dirname, 'public')));
+    /*
     // Check if token has been modified
     app.use(function(req, res, next) {
       if (req.headers.authorization) {
@@ -1051,7 +1049,7 @@ export const start = async () => {
       else {
         res.sendStatus(401)
       }
-    });
+    });*/
 
     process.on('unhandledRejection', (reason, p) => {
       console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
@@ -1086,6 +1084,15 @@ export const start = async () => {
     app.use('/graphiql', graphiqlExpress({
       endpointURL: '/graphql',
     }))
+
+
+    app.post('/upload/photo', upload.single('image'), function(req, res) {
+      res.header("Access-Control-Allow-Origin", "*");
+      console.log(req.file)
+      const filename = req.file.filename
+      const mimetype = req.file.mimetype.split("/")[1]
+      res.status(200).send({'filename': filename + '.' + mimetype})
+    })
 
 
     app.listen(PORT, () => {
